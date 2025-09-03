@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Firmware Update &#8212; VectorNav 0.22.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5686f5df"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Register Scan" href="register_scan.html" />
+    <link rel="prev" title="Data Export" href="data_export.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="register_scan.html" title="Register Scan"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="data_export.html" title="Data Export"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Firmware Update</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="firmware-update">
+<h1>Firmware Update<a class="headerlink" href="#firmware-update" title="Link to this heading">¶</a></h1>
+<p>The Firmware Update plugin contains everything necessary to update the firmware on a VectorNav sensor. For most usecases, a single call to <code class="xref py py-func docutils literal notranslate"><span class="pre">vectornav.Plugins.FirmwareUpdater.updateFirmware()</span></code> is all that is required. To see a working example of the FirmwareUpdate plugin refer to firmware_update.py</p>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>To use the firmware update plugin, first import all the necessary modules:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">vectornav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vectornav.Plugins</span><span class="w"> </span><span class="kn">import</span> <span class="n">FirmwareUpdater</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="#vectornav.Plugins.FirmwareUpdater" title="vectornav.Plugins.FirmwareUpdater"><code class="xref py py-class docutils literal notranslate"><span class="pre">FirmwareUpdater</span></code></a> accepts a path to a FilePath object or a VNXML file path, and a baud rate parameters. The FilePaths object is a vector of file paths and its associated processor. For example, a VN-300 has a Nav and Gps processor, whereas a VN-100 and VN-200 only have a Nav processor. To update a VN-300 we can create FirmwareUpdater object and create the FilePaths object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">firmwareUpdater</span> <span class="o">=</span> <span class="n">FirmwareUpdater</span><span class="p">()</span>
+
+<span class="c1"># Lets update a VN-300</span>
+<span class="n">filePaths</span> <span class="o">=</span> <span class="n">vectornav</span><span class="o">.</span><span class="n">FilePaths</span><span class="p">()</span>
+
+<span class="n">allocation_failed</span> <span class="o">=</span> <span class="n">filePaths</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span>
+    <span class="n">FirmwareUpdater</span><span class="o">.</span><span class="n">File</span><span class="p">(</span>
+        <span class="s2">&quot;path_to_vn300_NAV_vnx_file&quot;</span><span class="p">,</span>
+        <span class="n">FirmwareUpdater</span><span class="o">.</span><span class="n">Processor</span><span class="o">.</span><span class="n">Nav</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">allocation_failed</span> <span class="o">=</span> <span class="n">filePaths</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span>
+    <span class="n">FirmwareUpdater</span><span class="o">.</span><span class="n">File</span><span class="p">(</span>
+        <span class="s2">&quot;path_to_vn300_GPS_vnx_file&quot;</span><span class="p">,</span>
+        <span class="n">FirmwareUpdater</span><span class="o">.</span><span class="n">Processor</span><span class="o">.</span><span class="n">Gps</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The FirmwareUpdater object needs access to a Sensor to lets create a sensor object and connect to the sensor.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sensor</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
+<span class="n">sensor</span><span class="o">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="s2">&quot;PORT_NAME&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we can update the firmware of the connected sensor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">firmwareUpdater</span><span class="o">.</span><span class="n">updateFirmware</span><span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">filePaths</span><span class="p">,</span> <span class="n">FirmwareUpdater</span><span class="o">.</span><span class="n">Params</span><span class="p">())</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">If you have a vnxml file you can simply pass the path the updateFirmware method</span>
+<span class="sd">firmwareUpdater.updateFirmware(sensor, &quot;path_to_vnxml&quot;, FirmwareUpdater.Params())</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">sensor</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>FirmwareUpdater.Params() is an optional parameter that allows the user to select the baud rate that the firmware update will use. By default the FirmwareUpdater will use a baud rate of 115200 for both the sensor and bootloader.</p>
+</section>
+<section id="firmwareupdater-api">
+<h2>FirmwareUpdater API<a class="headerlink" href="#firmwareupdater-api" title="Link to this heading">¶</a></h2>
+<section id="firmwareupdater">
+<h3>FirmwareUpdater<a class="headerlink" href="#firmwareupdater" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vectornav.Plugins.</span></span><span class="sig-name descname"><span class="pre">FirmwareUpdater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../api/sensor_api.html#vectornav.Sensor" title="vectornav.Sensor"><span class="pre">Sensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="vectornav.Plugins.vectornav.Plugins.FirmwareUpdater.FirmwareUpdater.updateFirmware">
+<span class="sig-prename descclassname"><span class="pre">FirmwareUpdater.</span></span><span class="sig-name descname"><span class="pre">updateFirmware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.vectornav.Plugins.FirmwareUpdater.FirmwareUpdater.updateFirmware" title="Link to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>updateFirmware(self: vectornav.Plugins.FirmwareUpdater, arg0: VN::Sensor, arg1: VN::String&lt;256&gt;, arg2: VN::FirmwareUpdater::Params) -&gt; bool</p></li>
+<li><p>updateFirmware(self: vectornav.Plugins.FirmwareUpdater, arg0: VN::Sensor, arg1: VN::Vector&lt;VN::FirmwareUpdater::File,6&gt;, arg2: VN::FirmwareUpdater::Params) -&gt; bool</p></li>
+</ol>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="file">
+<h3>File<a class="headerlink" href="#file" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.File">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vectornav.Plugins.FirmwareUpdater.</span></span><span class="sig-name descname"><span class="pre">File</span></span><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.File" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.File.filePath">
+<span class="sig-name descname"><span class="pre">filePath</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.File.filePath" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.File.processor">
+<span class="sig-name descname"><span class="pre">processor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#vectornav.Plugins.FirmwareUpdater.Processor" title="vectornav.Plugins.FirmwareUpdater.Processor"><span class="pre">vectornav.Plugins.FirmwareUpdater.Processor</span></a></em><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.File.processor" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="processor">
+<h3>Processor<a class="headerlink" href="#processor" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.Processor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vectornav.Plugins.FirmwareUpdater.</span></span><span class="sig-name descname"><span class="pre">Processor</span></span><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.Processor" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">Nav</span> <span class="pre">=</span> <span class="pre">&lt;Processor.Nav:</span> <span class="pre">0&gt;</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">Gnss</span> <span class="pre">=</span> <span class="pre">&lt;Processor.Gnss:</span> <span class="pre">1&gt;</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">Imu</span> <span class="pre">=</span> <span class="pre">&lt;Processor.Gnss:</span> <span class="pre">2&gt;</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">Poll</span> <span class="pre">=</span> <span class="pre">&lt;Processor.Gnss:</span> <span class="pre">'?'&gt;</span></span></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="params">
+<h3>Params<a class="headerlink" href="#params" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.Params">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vectornav.Plugins.FirmwareUpdater.</span></span><span class="sig-name descname"><span class="pre">Params</span></span><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.Params" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.Params.firmwareBaudRate">
+<span class="sig-name descname"><span class="pre">firmwareBaudRate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../api/sensor_api.html#vectornav.Sensor.BaudRate" title="vectornav.Sensor.BaudRate"><span class="pre">vectornav.Sensor.BaudRate</span></a></em><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.Params.firmwareBaudRate" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="vectornav.Plugins.FirmwareUpdater.Params.bootloaderBaudRate">
+<span class="sig-name descname"><span class="pre">bootloaderBaudRate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../api/sensor_api.html#vectornav.Sensor.BaudRate" title="vectornav.Sensor.BaudRate"><span class="pre">vectornav.Sensor.BaudRate</span></a></em><a class="headerlink" href="#vectornav.Plugins.FirmwareUpdater.Params.bootloaderBaudRate" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pages/migration_guide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/key_functionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/advanced_functionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">VNSDK API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Plugins</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data_export.html">Data Export</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Firmware Update</a></li>
+<li class="toctree-l2"><a class="reference internal" href="register_scan.html">Register Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_logger.html">Simple Logger</a></li>
+</ul>
+</li>
+</ul>
+</div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="data_export.html"
+                          title="Previous page">&larr; Data Export</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="register_scan.html"
+                          title="Next page">&rarr; Register Scan</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/plugins/firmware_update.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="register_scan.html" title="Register Scan"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="data_export.html" title="Data Export"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Firmware Update</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

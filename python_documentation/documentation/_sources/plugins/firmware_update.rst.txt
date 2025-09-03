@@ -1,0 +1,109 @@
+Firmware Update
+###############
+
+The Firmware Update plugin contains everything necessary to update the firmware on a VectorNav sensor. For most usecases, a single call to :py:func:`vectornav.Plugins.FirmwareUpdater.updateFirmware` is all that is required. To see a working example of the FirmwareUpdate plugin refer to firmware_update.py
+
+Usage
+=====
+
+To use the firmware update plugin, first import all the necessary modules:
+
+.. code-block:: python
+
+    import vectornav
+    from vectornav.Plugins import FirmwareUpdater
+
+The :py:class:`~vectornav.Plugins.FirmwareUpdater` accepts a path to a FilePath object or a VNXML file path, and a baud rate parameters. The FilePaths object is a vector of file paths and its associated processor. For example, a VN-300 has a Nav and Gps processor, whereas a VN-100 and VN-200 only have a Nav processor. To update a VN-300 we can create FirmwareUpdater object and create the FilePaths object.
+
+.. code-block:: python
+
+    firmwareUpdater = FirmwareUpdater()
+
+    # Lets update a VN-300
+    filePaths = vectornav.FilePaths()
+
+    allocation_failed = filePaths.push_back(
+        FirmwareUpdater.File(
+            "path_to_vn300_NAV_vnx_file",
+            FirmwareUpdater.Processor.Nav
+        )
+    )
+    
+    allocation_failed = filePaths.push_back(
+        FirmwareUpdater.File(
+            "path_to_vn300_GPS_vnx_file",
+            FirmwareUpdater.Processor.Gps
+        )
+    )
+
+
+The FirmwareUpdater object needs access to a Sensor to lets create a sensor object and connect to the sensor.
+
+.. code-block:: python
+
+    sensor = Sensor()
+    sensor.autoConnect("PORT_NAME")
+
+
+Now we can update the firmware of the connected sensor:
+
+.. code-block:: python
+
+    firmwareUpdater.updateFirmware(sensor, filePaths, FirmwareUpdater.Params())
+    """
+    If you have a vnxml file you can simply pass the path the updateFirmware method
+    firmwareUpdater.updateFirmware(sensor, "path_to_vnxml", FirmwareUpdater.Params())
+    """
+
+    sensor.disconnect()
+
+FirmwareUpdater.Params() is an optional parameter that allows the user to select the baud rate that the firmware update will use. By default the FirmwareUpdater will use a baud rate of 115200 for both the sensor and bootloader. 
+
+
+FirmwareUpdater API
+===================
+
+FirmwareUpdater
+^^^^^^^^^^^^^^^
+
+.. py:class:: vectornav.Plugins.FirmwareUpdater(sensor: Sensor, port: str)
+
+    .. automethod:: vectornav.Plugins.FirmwareUpdater.updateFirmware
+
+
+File
+^^^^
+
+.. py:class:: vectornav.Plugins.FirmwareUpdater.File()
+
+    .. py:attribute:: filePath
+        :type: str
+
+    .. py:attribute:: processor
+        :type: vectornav.Plugins.FirmwareUpdater.Processor
+
+
+Processor
+^^^^^^^^^
+
+.. py:class:: vectornav.Plugins.FirmwareUpdater.Processor()
+
+    .. py:attribute:: Nav = <Processor.Nav: 0>
+
+    .. py:attribute:: Gnss = <Processor.Gnss: 1>
+    
+    .. py:attribute:: Imu = <Processor.Gnss: 2>
+
+    .. py:attribute:: Poll = <Processor.Gnss: '?'>
+
+Params
+^^^^^^
+
+.. py:class:: vectornav.Plugins.FirmwareUpdater.Params()
+
+    .. py:attribute:: firmwareBaudRate
+        :type: vectornav.Sensor.BaudRate
+
+    .. py:attribute:: bootloaderBaudRate
+        :type: vectornav.Sensor.BaudRate
+

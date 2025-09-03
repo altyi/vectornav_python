@@ -1,0 +1,80 @@
+Advanced Functionality 
+ Non-Blocking Commands 
+ In some cases, it is necessary to send commands without blocking, perform other operations, and later return to validate the unit’s response. This is what the generic vectornav.Sensor.sendCommand() method is for. To do so: Create the GenericCommand object that we would like to send to the unit 
+ GenericCommand Instantiation (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+46    kmd = KnownMagneticDisturbance(KnownMagneticDisturbance.State.Present)
+```
+
+Call the sendCommand method with our GenericCommand object and the waitMode specified as Sensor.SendCommandBlockMode.none 
+ Send GenericCommand (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+47    vs.sendCommand(kmd, Sensor.SendCommandBlockMode.none) # Non-blocking
+```
+
+The command will then be sent to the unit and added to a queue, waiting for a corresponding response from the unit. When a command response (i.e. non-measurement ASCII packet) is seen from the unit, the response will attempt to be matched with the oldest command sent in the queue.
+If the response matches, the function exits. If not, it will continue through the queue (popping each command from the queue) until either the response is matched to a command or the queue is empty. 
+ This is done because VectorNav units always respond to commands in the order in which they were received. Any synchronous VnError is considered a valid response to any command. 
+ When you are ready to check the unit’s response, you can do so using vectornav.GenericCommand.getResponse() ; 
+ Print GenericCommand Response (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+54        print(f"\nKMD Response: {kmd.getResponse()}")
+```
+
+If the response is empty, a couple of things may be happening: The command is still in the command queue, awaiting a response If this is the case, GenericCommand.isAwaitingResponse() will return True . Whether a command is “awaiting a response” is not time-based; rather, it will be awaiting a response until any command response attempts to match with that command. As such, the correct response could either be to check again later (if only a brief period has elapsed) or to resend the command, assuming it was not received.
+
+GenericCommand Is Awaiting Response 
+ ```python
+if (kmd.isAwaitingResponse()):
+   # The kmd command is still in the queue. It could either be too early to have heard a response, or this command should be resent.
+```
+
+The command has received an invalid response In this case, a response has attempted to be matched with the GenericCommand object. This likely means that the unit did not hear the command and was responding to a subsequent command. Most likely, we should try to resend the command.
+
+Now that we know we have a valid response, we should make sure the response is not a VnError using vectornav.GenericCommand.getError() (if the response is any VnError, the unit did not apply the command). 
+ Ensuring Response Isn’t Error (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+55        error_maybe = kmd.getError()
+56        if error_maybe is not None:
+57            print(f"Error: {error_maybe}")
+```
+
+If the value returned from getError is None, no error occurred and the command was accepted by the unit. 
+ Because Read Register and Write Register are simply specialized commands to the unit, sending the commands non-blocking is very similar to sending any other command non-blocking. The only additional step is the conversion between the Register object and the GenericCommand object. 
+ Non-Blocking Read Register 
+ Just like any other Read Register command, we first need to instantiate our Register object. 
+ Instantiating Register Object 
+ ```python
+velAidRegister = Registers.VelAidingMeas()
+```
+
+We then can produce a GenericCommand object for the Read Register command using the vectornav.Register.toReadCommand() method. 
+ Register To Read GenericCommand 
+ ```python
+velAidWRGCommand = GenericCommand()
+velAidWRGCommand = velAidRegister.toReadCommand();
+```
+
+Now that we have a GenericCommand object, we can send it non-blocking using the steps in Non-Blocking Commands . 
+ Non-Blocking Write Register 
+ Writing a register without blocking is very similar to reading a register without blocking. The only difference is the method called to create the Write Register command rather than the Read Register command. 
+ Very similar to the first step in Writing Registers , we create our Register object, populating it with the desired configuration values. 
+ Instantiating Register Object (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+64    velAidRegister = Registers.VelAidingMeas()
+```
+
+Populate Register Object (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+96            velAidRegister.velocityX = random.random() # random.random() to simulate different velocities
+97            velAidRegister.velocityY = random.random()
+98            velAidRegister.velocityZ = random.random()
+```
+
+We then can produce a GenericCommand object for the Write Register command using the vectornav.ConfigurationRegister.toWriteCommand() method. 
+ Register To Write GenericCommand (examples/non_blocking_commands/non_blocking_commands.py) 
+ ```python
+99            velAidWRGCommand = velAidRegister.toWriteCommand()
+```
+
+Now that we have our GenericCommand object for the Write Register command, we can send it to the unit and validate acceptance following the steps in Non-Blocking Commands .

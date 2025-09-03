@@ -1,0 +1,50 @@
+Getting Started
+###############
+
+Requirements
+============
+
+* Python >= 3.8 64-bit
+* MSVC >= 2015 on Windows OS
+* pybind11
+
+Tested OS
+=========
+The Python SDK is continually tested on the following hardware/Python combinations:
+
+* Windows 10 : Python 3.11
+* Windows 11 : Python 3.11
+* Ubuntu 20.04 : Python 3.8
+
+Installation
+============
+
+To build and install the VectorNav Python library run the following command from the root folder:
+
+.. code-block:: console
+
+    pip install ./python
+
+.. tip::
+    If an installation error occurs, pip may need to be upgraded.
+    Run the command::
+
+        python -m pip install --upgrade pip 
+
+    After updating pip, try to reinstall the VNSDK python package to see if the error still occurs.
+    If so, reach out to VectorNav support for further assistance.
+
+Run the Getting Started Example
+===============================
+
+The best way to validate the installation is by running the Getting Started example located in the ./python/examples/getting_started directory. Notice you can run this file by passing the COM port as a command line argument or by hardcoding the value inside the **getting_started.py** example file. The VectorNav USB adapter will show up in Windows as **COMXX**, where **XX** is the COM port number, and in Linux as **/dev/ttyUSBX**, where **X** is a number (usually 0). The example can now be run using:
+
+.. code-block:: console
+
+    python ./python/examples/getting_started/getting_started.py
+
+or using the optional command line argument:
+
+.. code-block:: console
+
+    python ./python/examples/getting_started/getting_started.py your_com_port_here

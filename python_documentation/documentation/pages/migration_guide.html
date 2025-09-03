@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Migration Guide &#8212; VectorNav 0.22.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5686f5df"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Getting Started" href="getting_started.html" />
+    <link rel="prev" title="Welcome to VectorNav Python documentation!" href="../Documentation.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="getting_started.html" title="Getting Started"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../Documentation.html" title="Welcome to VectorNav Python documentation!"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Migration Guide</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="migration-guide">
+<h1>Migration Guide<a class="headerlink" href="#migration-guide" title="Link to this heading">¶</a></h1>
+<section id="notable-changes-and-features">
+<span id="migrationguidepython"></span><h2>Notable Changes and Features<a class="headerlink" href="#notable-changes-and-features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>64-bit Python support</p></li>
+<li><p>High-rate data stability (can output above 200 Hz)</p></li>
+<li><p>Ability to catch exceptions</p></li>
+<li><p>Significant performance improvements</p></li>
+<li><p>Added measurements and registers</p></li>
+<li><p>Ability to log raw serial data</p></li>
+<li><p>New plugin support (For a list of avaialble plugins in the VNSDK, see <a class="reference internal" href="#plugin-list"><span class="std std-ref">Plugin List</span></a>)</p></li>
+<li><p>Compatibility with FB packets</p></li>
+</ul>
+</section>
+<section id="migrating-from-the-vectornav-programming-library-to-the-vnsdk">
+<h2>Migrating from the VectorNav Programming Library to the VNSDK<a class="headerlink" href="#migrating-from-the-vectornav-programming-library-to-the-vnsdk" title="Link to this heading">¶</a></h2>
+<p>In the VectorNav Programming Library, a <cite>VnSensor</cite> object is created with each read or write register command as a method of that object.
+In the VNSDK, a <cite>Sensor</cite> object is still created for interaction, but now only two methods, <cite>readRegister</cite> and <cite>writeRegister</cite>, exist for register interaction.
+Each register is now its own class that will be populated when a <cite>readRegister</cite> or <cite>writeRegister</cite> request is sent.
+The examples below will show differences between frequently used commands.</p>
+<section id="naming-conventions">
+<h3>Naming Conventions<a class="headerlink" href="#naming-conventions" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Method, member, and variable names are written in <strong>camelCase</strong></dt><dd><p>For example, a composite data variable accessing the accel value will be written as compositeData.imu.accel</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Types, enumeration values, namespaces, and classes are written in <strong>PascalCase</strong></dt><dd><p>For example, a register enum for the serial port will be written as SerialPort</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="error-handling">
+<h3>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading">¶</a></h3>
+<p>Before explaining how to read and write registers, the user should know the differences in handling errors between the two softwares.
+While both are Python libraries wrapping C++ code, the Programming Library was unable to catch exceptions through the language barrier, causing a crash on any exception thrown in C++, regardless of whether it was supposed to be caught in Python.
+The VNSDK C++ library does not throw exceptions; it instead returns error codes which are propagated to the Python code and thrown natively in Python. Because of this, all exceptions can be caught as native Python exceptions.</p>
+</section>
+<section id="connecting-to-the-unit">
+<h3>Connecting to the Unit<a class="headerlink" href="#connecting-to-the-unit" title="Link to this heading">¶</a></h3>
+<p>For both software packages, the serial port name is strictly necessary to connect to the unit.
+For the VectorNav Programming Library, the baud rate must also be known.
+With the VNSDK, there is an option to specify the baud rate using the <cite>connect</cite> method, but now there is an <cite>autoConnect</cite> method that will scan the specified port for the unit’s baud rate.</p>
+<p>To communicate with the unit, a sensor object has to be created before connection can be established.
+On the VectorNav Programming Library this is done by</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">VnSensor</span><span class="p">()</span>
+<span class="hll"><span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;COM1&#39;</span><span class="p">,</span> <span class="mi">115200</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>While on the VNSDK, the sensor is connected using the <cite>autoConnect</cite> method below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vs</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
+<span class="hll"><span class="n">vs</span><span class="o">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="s1">&#39;COM1&#39;</span><span class="p">)</span>
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connected to </span><span class="si">{</span><span class="n">vs</span><span class="o">.</span><span class="n">connectedPortName</span><span class="p">()</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">vs</span><span class="o">.</span><span class="n">connectedBaudRate</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="registers">
+<h3>Registers<a class="headerlink" href="#registers" title="Link to this heading">¶</a></h3>
+<section id="bitfields">
+<h4>Bitfields<a class="headerlink" href="#bitfields" title="Link to this heading">¶</a></h4>
+</section>
+<section id="enumerations">
+<h4>Enumerations<a class="headerlink" href="#enumerations" title="Link to this heading">¶</a></h4>
+</section>
+<section id="reading-registers">
+<h4>Reading Registers<a class="headerlink" href="#reading-registers" title="Link to this heading">¶</a></h4>
+<p>Using the Programming Library, the user would create a VnSensor object and call the respective read register method.
+For example, the following code reads the YPR register (Register 85).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create Sensor Object</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">VnSensor</span><span class="p">()</span>
+
+<span class="c1"># Connect to the unit</span>
+<span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;COM1&#39;</span><span class="p">,</span> <span class="mi">115200</span><span class="p">)</span>
+
+<span class="c1"># Read YPR Register</span>
+<span class="n">ypr</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">read_yaw_pitch_roll</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ypr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the VNSDK, the user creates the Sensor object and passes a pointer to a Register object they’d like to read to the <code class="docutils literal notranslate"><span class="pre">readRegister</span></code> method.
+This looks like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create Sensor object</span>
+<span class="n">vs</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
+
+<span class="c1"># Connect to the unit</span>
+<span class="n">vs</span><span class="o">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="n">sensorPortName</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connected to </span><span class="si">{</span><span class="n">sensorPortName</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">vs</span><span class="o">.</span><span class="n">connectedBaudRate</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create Register object</span>
+<span class="n">yprRegister</span> <span class="o">=</span> <span class="n">Registers</span><span class="o">.</span><span class="n">YawPitchRoll</span><span class="p">()</span>
+
+<span class="c1"># Read from the YPR register</span>
+<span class="n">vs</span><span class="o">.</span><span class="n">readRegister</span><span class="p">(</span><span class="n">yprRegister</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current Reading: Yaw - </span><span class="si">{</span><span class="n">yprRegister</span><span class="o">.</span><span class="n">yaw</span><span class="si">}</span><span class="s2">, Pitch - </span><span class="si">{</span><span class="n">yprRegister</span><span class="o">.</span><span class="n">pitch</span><span class="si">}</span><span class="s2">, Roll - </span><span class="si">{</span><span class="n">yprRegister</span><span class="o">.</span><span class="n">roll</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="writing-registers">
+<h4>Writing Registers<a class="headerlink" href="#writing-registers" title="Link to this heading">¶</a></h4>
+<p>Writing to the registers incorporates the same changes as reading the registers.
+The following examples will show the difference between writing to the <em>AsyncDataOutputType</em> register (Register 6).
+To configure the VectorNav Programming Library to output the <em>VNYPR</em> message, create the sensor object and then write to the <em>AsyncDataOutputType</em> register:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create Sensor object</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">VnSensor</span><span class="p">()</span>
+
+<span class="c1"># Connect to the unit</span>
+<span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;COM1&#39;</span><span class="p">,</span> <span class="mi">115200</span><span class="p">)</span>
+
+<span class="c1"># Write the frequency</span>
+<span class="n">s</span><span class="o">.</span><span class="n">write_async_data_output_frequency</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the VNSDK, the same process as reading from registers is followed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create Sensor object</span>
+<span class="n">vs</span> <span class="o">=</span> <span class="n">Sensor</span><span class="p">()</span>
+
+<span class="c1"># Connect to the unit</span>
+<span class="n">vs</span><span class="o">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="n">sensorPortName</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connected to </span><span class="si">{</span><span class="n">sensorPortName</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">vs</span><span class="o">.</span><span class="n">connectedBaudRate</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create register object</span>
+<span class="n">asyncDataOutputFreq</span> <span class="o">=</span> <span class="n">Registers</span><span class="o">.</span><span class="n">AsyncOutputFreq</span><span class="p">()</span>
+
+<span class="c1"># Set Output Frequency as 10Hz on Serial Port 1</span>
+<span class="n">asyncDataOutputFreq</span><span class="o">.</span><span class="n">adof</span> <span class="o">=</span> <span class="n">Registers</span><span class="o">.</span><span class="n">AsyncOutputFreq</span><span class="o">.</span><span class="n">Adof</span><span class="o">.</span><span class="n">Rate10Hz</span>
+<span class="n">asyncDataOutputFreq</span><span class="o">.</span><span class="n">serialPort</span> <span class="o">=</span> <span class="n">Registers</span><span class="o">.</span><span class="n">AsyncOutputFreq</span><span class="o">.</span><span class="n">SerialPort</span><span class="o">.</span><span class="n">Serial1</span>
+
+<span class="c1"># Write the frequency</span>
+<span class="n">vs</span><span class="o">.</span><span class="n">writeRegister</span><span class="p">(</span><span class="n">asyncDataOutputFreq</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="reading-measurements">
+<h3>Reading Measurements<a class="headerlink" href="#reading-measurements" title="Link to this heading">¶</a></h3>
+<p>In the Programming Library, the primary method of extracting asynchronous data was via a <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object from the <code class="docutils literal notranslate"><span class="pre">EzAsyncData</span></code> class. Because the VNSDK is tightly integrated with its <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> class, this section outlines how to migrate between <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> classes.</p>
+<section id="the-compositedata-class">
+<h4>The <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> Class<a class="headerlink" href="#the-compositedata-class" title="Link to this heading">¶</a></h4>
+<p>Both the Programming Library and VNSDK provide a <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> class that are reasonably similar to each other. In both codebases, each <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object allocates memory for every possible measurement output from the unit, optionally containing a subset of those measurements.
+The Programming Library’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> class maintains public data members, getters, setters, and present booleans. The VNSDK’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> only contains public data members, instead opting to report which variables are optionally <code class="docutils literal notranslate"><span class="pre">None</span></code>. In this way, the Programming Library’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> class feels more like a true class, whereas the VNSDK feels more like a data structure.</p>
+<p>The first distinction is in organization; the Programming Library’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> contains each measurement type accessor by getter methods at the top level, whereas the VNSDK’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> contains each measurement type directly accessable, organized in their respective binary groups, as defined by the Interface Control Document (ICD).</p>
+<p>For example, to access the ypr field in the Programming Library’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object would be accessed by <code class="docutils literal notranslate"><span class="pre">cd.yaw_pitch_roll()</span></code>, wheras using the SDK’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object would be <code class="docutils literal notranslate"><span class="pre">cd.attitdue.ypr</span></code>.</p>
+<p>The second distinction is in the reporting of updated or nonupdated measurement types; the Programming Library’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> provides <code class="docutils literal notranslate"><span class="pre">has</span></code> methods which return a bool of whether the requested measurement type is present.
+The VNSDK’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object natively holds each measurement type as optionally <code class="docutils literal notranslate"><span class="pre">None</span></code>, eliminating the need for a separate method to check if it is present.</p>
+<p>For example, the presence of that same ypr measurement in the Programming Library would be validated by <code class="docutils literal notranslate"><span class="pre">cd.has_yaw_pitch_roll()</span></code>, whereas in the VNSDK would be validated by a comparison to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>Besides the snake case to camel case convention change, there also are some minor measurement type name changes (i.e. Programming Library’s <code class="docutils literal notranslate"><span class="pre">acceleration</span></code> to VNSDK’s <code class="docutils literal notranslate"><span class="pre">accel</span></code>), where the VNSDK’s <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> naming will always match the latest ICD.</p>
+</section>
+<section id="compositedata-accessor-methods">
+<h4><code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> Accessor Methods<a class="headerlink" href="#compositedata-accessor-methods" title="Link to this heading">¶</a></h4>
+<p>The Programming Library’s <code class="docutils literal notranslate"><span class="pre">VnSensor</span></code> class does not natively handle <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> classes, so a separate class—<cite>EzAsyncData</cite>—has to handle parsing and reporting the objects.
+In contrast, the VNSDK’s <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> class natively parses to <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> objects and reports them to the user. Both <code class="docutils literal notranslate"><span class="pre">EzAsyncData</span></code> and <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> produce exactly one <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object per measurement message received from the unit.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">EzAsyncData</span></code> class provides two methods to retrieve data: <code class="docutils literal notranslate"><span class="pre">EzAsyncData::currentdata</span></code> and <code class="docutils literal notranslate"><span class="pre">EzAsyncData::next_data</span></code>; the <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> class provides <code class="docutils literal notranslate"><span class="pre">Sensor::getNextMeasurement</span></code> and <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">EzAsyncData</span></code> class maintains only the latest measurement received, whereas the VNSDK maintains a queue of <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> objects.
+As such, there are some minor differences between the two codebases to note when accessing <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> objects.</p>
+<p>In most cases—where the polling rate for the latest measurement data exceeds the unit’s measurement output rate—a call to <code class="docutils literal notranslate"><span class="pre">EzAsyncData::currentdata</span></code> is similar in use to non-blocking calls of both <code class="docutils literal notranslate"><span class="pre">Sensor::getNextMeasurement</span></code> and <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code>.
+In these cases, <code class="docutils literal notranslate"><span class="pre">EzAsyncData::currentdata</span></code> will repeatedly output a <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object parsed from the most recent measurement packet, whereas the <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> methods will output that <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> object only once.
+When the polling rate exceeds the output rate, <code class="docutils literal notranslate"><span class="pre">EzAsyncData::next_data</span></code> is nearly identical to a blocking call of both <code class="docutils literal notranslate"><span class="pre">Sensor::getNextMeasurement</span></code> and <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code>, but should probably be replaced with a blocking call to <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code>.</p>
+<p>When the user’s measurement polling rate subceeds the unit’s measurement output rate, the presence of a <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> queue in the <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> class is more apparent. In this case, <code class="docutils literal notranslate"><span class="pre">EzAsyncData::currentdata</span></code> is identical to a non-blocking call of <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code>.
+While there is no direct analogue to <code class="docutils literal notranslate"><span class="pre">EzAsyncData::next_data</span></code>, it is most similar to a blocking call of <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code>, with the exception that <code class="docutils literal notranslate"><span class="pre">Sensor::getMostRecentMeasurement</span></code> returns immediately if a measurement is present in the queue upon invocation—
+<code class="docutils literal notranslate"><span class="pre">EzAsyncData::next_data</span></code> necessarily blocks upon receipt of a measurement subsequent to the invocation.
+In this case, <code class="docutils literal notranslate"><span class="pre">EzAsyncData</span></code> drops <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> objects parsed between polls, whereas <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> maintains all <code class="docutils literal notranslate"><span class="pre">CompositeData</span></code> objects parsed (until the queue capacity is reached). Consequently, the user can successively read all the measurement packets since their last poll using <code class="docutils literal notranslate"><span class="pre">Sensor::getNextMeasurement</span></code> to prevent data loss.</p>
+</section>
+</section>
+</section>
+<section id="plugin-list">
+<h2>Plugin List<a class="headerlink" href="#plugin-list" title="Link to this heading">¶</a></h2>
+<section id="firmware-update">
+<h3>Firmware Update<a class="headerlink" href="#firmware-update" title="Link to this heading">¶</a></h3>
+<p>While this plugin is available in the Programming Library, it has been updated with the issuance of the VNSDK.
+The new Firmware Update plugin has the ability to accept both <em>VNX</em> and <em>VNXML</em> files, contains significant stability improvements, and has much more flexible and simple syntax.
+This plugin allows the users to update their unit’s firmware without having to connect it to VectorNav’s GUI, Control Center, or create their own embedded updater.
+All firmware updates must be performed over the main port, UART-1, and communication must be established before an update can occur.
+More information on this plugin can be found on the <a class="reference internal" href="../plugins/firmware_update.html#firmware-update"><span class="std std-ref">Firmware Update</span></a> page.</p>
+</section>
+<section id="register-scan">
+<h3>Register Scan<a class="headerlink" href="#register-scan" title="Link to this heading">¶</a></h3>
+<p>The Register Scan plugin is a newly added plugin unique to the VNSDK.
+This plugin is capable of producing an XML file containing the non-default registers on the unit, or uploading an XML file of register values to the unit. It is similar to and interoperable with the “Save Config” and “Load Config” buttons on Control Center.
+Additional information can be found on the <a class="reference internal" href="../plugins/register_scan.html#register-scan"><span class="std std-ref">Register Scan</span></a> page.</p>
+</section>
+<section id="simple-logger">
+<h3>Simple Logger<a class="headerlink" href="#simple-logger" title="Link to this heading">¶</a></h3>
+<p>The Simple Logger plugin allows users to easily log all bytes received from the unit to a binary file without the need to parse the packets.
+The Programming Library does not have any native capaibility to do this, and was most often accomplished by custom code utilizing the <cite>RawDataReceivedHandler</cite>.
+Additional information can be found on the <a class="reference internal" href="../plugins/simple_logger.html#simple-logger"><span class="std std-ref">Simple Logger</span></a> page.</p>
+</section>
+<section id="file-export">
+<h3>File Export<a class="headerlink" href="#file-export" title="Link to this heading">¶</a></h3>
+<p>The File Export plugin can export data into formats such as a <em>CSV</em>, <em>TXT</em>, or <em>RINEX</em> file.
+The plugin can handle data from either previously logged binary files or data directly from a VectorNav unit.
+Additionally, it can handle exporting to multiple different formats at once.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Migration Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#notable-changes-and-features">Notable Changes and Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#migrating-from-the-vectornav-programming-library-to-the-vnsdk">Migrating from the VectorNav Programming Library to the VNSDK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plugin-list">Plugin List</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="key_functionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_functionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">VNSDK API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plugins/index.html">Plugins</a></li>
+</ul>
+</div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="../Documentation.html"
+                          title="Previous page">&larr; Welcome to VectorNav Python documentation!</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="getting_started.html"
+                          title="Next page">&rarr; Getting Started</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/pages/migration_guide.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="getting_started.html" title="Getting Started"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../Documentation.html" title="Welcome to VectorNav Python documentation!"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Migration Guide</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

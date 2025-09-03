@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simple Logger &#8212; VectorNav 0.22.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5686f5df"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Register Scan" href="register_scan.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="register_scan.html" title="Register Scan"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simple Logger</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="simple-logger">
+<h1>Simple Logger<a class="headerlink" href="#simple-logger" title="Link to this heading">¶</a></h1>
+<p>The SimpleLogger plugin contains everything necessary to log data from a VectorNav sensor to a binary file.</p>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>To use the SimpleLogger plugin, first import all the necessary modules:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">vectornav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vectornav.Plugins</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleLogger</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="#vectornav.Plugins.SimpleLogger" title="vectornav.Plugins.SimpleLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleLogger</span></code></a> requires a <code class="xref py py-class docutils literal notranslate"><span class="pre">ByteBuffer</span></code> object and the path of the desired log file. The ByteBuffer is a user-defined buffer where bytes will temporarily be stored before they are written to the log file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bufferToLog</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="p">(</span><span class="mi">8192</span><span class="p">)</span>
+
+<span class="n">simpleLogger</span> <span class="o">=</span> <span class="n">SimpleLogger</span><span class="p">(</span><span class="n">bufferToLog</span><span class="p">,</span> <span class="s2">&quot;log.bin&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the ByteBuffer and SimpleLogger class are instatiated, register the ByteBuffer with the sensor object as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vs</span><span class="o">.</span><span class="n">registerReceivedByteBuffer</span><span class="p">(</span><span class="n">bufferToLog</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To start logging data from the sensor, you must issue the start method. This creates a new thread that will write data to file when there is enough time to do so. This prevents file write operations from blocking the main thread.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">start</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Failed to write to file&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Ensure that <a class="reference internal" href="#vectornav.Plugins.SimpleLogger.start" title="vectornav.Plugins.SimpleLogger.start"><code class="xref py py-meth docutils literal notranslate"><span class="pre">start()</span></code></a> is succesful, otherwise the logger was not able to create the file. Stopping the logger is just as easy – just call <a class="reference internal" href="#vectornav.Plugins.SimpleLogger.stop" title="vectornav.Plugins.SimpleLogger.stop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stop()</span></code></a> and deregister the ByteBuffer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="n">vs</span><span class="o">.</span><span class="n">deregisterReceivedByteBuffer</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="simplelogger-api">
+<h2>SimpleLogger API<a class="headerlink" href="#simplelogger-api" title="Link to this heading">¶</a></h2>
+<section id="simplelogger">
+<h3>SimpleLogger<a class="headerlink" href="#simplelogger" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="vectornav.Plugins.SimpleLogger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vectornav.Plugins.</span></span><span class="sig-name descname"><span class="pre">SimpleLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">byteBuffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ByteBuffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filePath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.SimpleLogger" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="vectornav.Plugins.SimpleLogger.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.SimpleLogger.start" title="Link to this definition">¶</a></dt>
+<dd><p>Starts a backgroud thread to log data to the specified file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vectornav.Plugins.SimpleLogger.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.SimpleLogger.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Stops the logging thread and closes the file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vectornav.Plugins.SimpleLogger.isLogging">
+<span class="sig-name descname"><span class="pre">isLogging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.SimpleLogger.isLogging" title="Link to this definition">¶</a></dt>
+<dd><p>Checks if the logger is actively logging</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pages/migration_guide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/key_functionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/advanced_functionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">VNSDK API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Plugins</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data_export.html">Data Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="firmware_update.html">Firmware Update</a></li>
+<li class="toctree-l2"><a class="reference internal" href="register_scan.html">Register Scan</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Simple Logger</a></li>
+</ul>
+</li>
+</ul>
+</div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="register_scan.html"
+                          title="Previous page">&larr; Register Scan</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/plugins/simple_logger.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="register_scan.html" title="Register Scan"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simple Logger</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

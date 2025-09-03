@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Register Scan &#8212; VectorNav 0.22.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/cloud.css?v=36acb9b5" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=a6d58504" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noticia+Text:400,i,b,bi|Open+Sans:400,i,b,bi|Roboto+Mono:400,i,b,bi&amp;display=swap" type="text/css" />
+    
+    <script src="../_static/documentation_options.js?v=5686f5df"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+
+    
+    
+     
+        <script src="../_static/jquery.cookie.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.base.js"></script>
+    
+
+    
+     
+        <script src="../_static/cloud.js"></script>
+    
+
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simple Logger" href="simple_logger.html" />
+    <link rel="prev" title="Firmware Update" href="firmware_update.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="simple_logger.html" title="Simple Logger"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="firmware_update.html" title="Firmware Update"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Register Scan</a></li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="register-scan">
+<h1>Register Scan<a class="headerlink" href="#register-scan" title="Link to this heading">¶</a></h1>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>To start loading and saving sensor configurations we must first create a sensor object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">vectornav</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vectornav</span><span class="w"> </span><span class="kn">import</span> <span class="n">Plugins</span>
+
+<span class="n">port</span> <span class="o">=</span> <span class="s2">&quot;COM1&quot;</span>
+<span class="n">vs</span> <span class="o">=</span> <span class="n">vectornav</span><span class="o">.</span><span class="n">Sensor</span><span class="p">()</span>
+<span class="n">vectornav</span><span class="o">.</span><span class="n">autoConnect</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The Register Scanner needs access to the sensor object and COM port of the connected VectorNav sensor.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">configurator</span> <span class="o">=</span> <span class="n">Plugins</span><span class="o">.</span><span class="n">SensorConfigurator</span><span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After creating the Register Scan object, you can load or save a configuration with the appropriate file path:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">configurator</span><span class="o">.</span><span class="n">SaveConfiguration</span><span class="p">(</span><span class="n">pathToSaveFile</span><span class="p">)</span>
+<span class="n">configurator</span><span class="o">.</span><span class="n">LoadConfiguration</span><span class="p">(</span><span class="n">pathToLoadFile</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="registerscan-api">
+<h2>RegisterScan API<a class="headerlink" href="#registerscan-api" title="Link to this heading">¶</a></h2>
+<section id="registerscan">
+<h3>RegisterScan<a class="headerlink" href="#registerscan" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="vectornav.Plugins.RegisterScan">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">vectornav.Plugins.</span></span><span class="sig-name descname"><span class="pre">RegisterScan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../api/sensor_api.html#vectornav.Sensor" title="vectornav.Sensor"><span class="pre">Sensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.RegisterScan" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="vectornav.Plugins.RegisterScan.SaveConfiguration">
+<span class="sig-name descname"><span class="pre">SaveConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileLocation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.RegisterScan.SaveConfiguration" title="Link to this definition">¶</a></dt>
+<dd><p>Save the current configuration on the sensor to fileLocation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vectornav.Plugins.RegisterScan.LoadConfiguration">
+<span class="sig-name descname"><span class="pre">LoadConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileLocation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vectornav.Plugins.RegisterScan.LoadConfiguration" title="Link to this definition">¶</a></dt>
+<dd><p>Load the configuration from fileLocation onto the sensor</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<div class="sphinx-toc sphinxglobaltoc">
+<h3><a href="../Documentation.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pages/migration_guide.html">Migration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/key_functionality.html">Key Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/advanced_functionality.html">Advanced Functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">VNSDK API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Plugins</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data_export.html">Data Export</a></li>
+<li class="toctree-l2"><a class="reference internal" href="firmware_update.html">Firmware Update</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Register Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simple_logger.html">Simple Logger</a></li>
+</ul>
+</li>
+</ul>
+</div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="firmware_update.html"
+                          title="Previous page">&larr; Firmware Update</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="simple_logger.html"
+                          title="Next page">&rarr; Simple Logger</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/plugins/register_scan.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="simple_logger.html" title="Simple Logger"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="firmware_update.html" title="Firmware Update"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../Documentation.html">VectorNav 0.22.0 documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Plugins</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Register Scan</a></li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, VectorNav Technologies.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

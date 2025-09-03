@@ -1,0 +1,47 @@
+Register Scan
+#############
+
+Usage
+=====
+
+To start loading and saving sensor configurations we must first create a sensor object:
+
+.. code-block:: python
+
+    import vectornav
+    from vectornav import Plugins
+
+    port = "COM1"
+    vs = vectornav.Sensor()
+    vectornav.autoConnect(port)
+
+The Register Scanner needs access to the sensor object and COM port of the connected VectorNav sensor.
+
+.. code-block:: python
+
+    configurator = Plugins.SensorConfigurator(vs, port)
+
+After creating the Register Scan object, you can load or save a configuration with the appropriate file path:
+
+.. code-block:: python
+
+    configurator.SaveConfiguration(pathToSaveFile)
+    configurator.LoadConfiguration(pathToLoadFile)
+
+
+RegisterScan API
+================
+
+RegisterScan
+^^^^^^^^^^^^
+
+.. py:class:: vectornav.Plugins.RegisterScan(sensor: Sensor, port: str)
+
+    .. py:method:: SaveConfiguration(fileLocation: str)
+
+        Save the current configuration on the sensor to fileLocation
+
+    .. py:method:: LoadConfiguration(fileLocation: str)
+
+        Load the configuration from fileLocation onto the sensor
+

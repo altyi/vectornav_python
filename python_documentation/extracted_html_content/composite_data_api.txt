@@ -1,0 +1,226 @@
+CompositeData
+class vnpy.CompositeData
+matchesMessage(asciiHeader: vnpy.AsciiHeader) → bool
+Returns headerMatches: Whether the passed header matches.
+Checks whether the passed register matches the header of the message which populated this object.
+matchesMessage(binaryHeader: vnpy.BinaryHeader) → bool
+Returns headerMatches: Whether the passed header matches.
+Checks whether the passed register matches the header of the message which populated this object.
+matchesMessage(binaryOutputRegister: vnpy.Registers.BinaryOutput) → bool
+Returns headerMatches: Whether the passed header matches.
+Checks whether the passed register matches the header of the message which populated this object.
+time: TimeGroup
+imu: ImuGroup
+gnss: GnssGroup
+attitude: AttitudeGroup
+ins: InsGroup
+gnss2: Gnss2Group
+gnss3: Gnss3Group
+TimeGroup
+class TimeGroup
+timeStartup: optional[vnpy.Time]
+The system time since startup measured in nano seconds.  The time since startup is based upon the internal TXCO oscillator for the MCU.  The accuracy of the internal TXCO is plus minus 20ppm (-40C to 85C).
+timeGps: optional[vnpy.Time]
+The absolute GPS time since start of GPS epoch 1980 expressed in nano seconds.
+timeGpsTow: optional[vnpy.Time]
+The time since the start of the current GPS time week expressed in nano seconds.
+timeGpsWeek: optional[uint16_t]
+The current GPS week.
+timeSyncIn: optional[vnpy.Time]
+The time since the last SyncIn event trigger expressed in nano seconds.
+timeGpsPps: optional[vnpy.Time]
+The time since the last GPS PPS trigger event expressed in nano seconds.
+timeUtc: optional[vnpy.TimeUtc]
+The current UTC time.  The year is given as a signed byte year offset from the year 2000.  For example the year 2013 would be given as year 13.
+syncInCnt: optional[uint32_t]
+The number of SyncIn trigger events that have occurred.
+syncOutCnt: optional[uint32_t]
+The number of SyncOut trigger events that have occurred.
+timeStatus: optional[vnpy.TimeStatus]
+Time valid status flags.
+ImuGroup
+class ImuGroup
+imuStatus: optional[vnpy.ImuStatus]
+Reports various statuses of the IMU sensors.
+uncompMag: optional[vnpy.Vec3f]
+The IMU magnetic field given in the body-frame.  This measurement is compensated by the static calibration (individual factory calibration stored in flash), and the user compensation, however it is not compensated by the onboard Hard/Soft Iron estimator.
+uncompAccel: optional[vnpy.Vec3f]
+The IMU acceleration given in the body-frame.  This measurement is compensated by the static calibration (individual factory calibration stored in flash), however it is not compensated by any bias compensation from the onboard Kalman filter.
+uncompGyro: optional[vnpy.Vec3f]
+The IMU angular rate given in the body-frame.  This measurement is compensated by the static calibration (individual factory calibration stored in flash), however it is not compensated by any bias compensation from the onboard Kalman filter.
+temperature: optional[float]
+The IMU temperature.
+pressure: optional[float]
+The IMU pressure.  This is an absolute pressure measurement.  Typical pressure at sea level would be around 100 kPa.
+deltaTheta: optional[DeltaTheta]
+The delta theta is the delta rotation angles incurred due to rotation, since the last time the values were output by the device. The delta angles are calculated based upon the onboard conning and sculling integration performed onboard the sensor at the IMU sampling rate. The delta time is the time interval that the delta angle and velocities are integrated over. The integration for the delta angles are reset each time the values are either polled or sent out due to a scheduled asynchronous ASCII or binary output.
+deltaVel: optional[vnpy.Vec3f]
+The delta velocity is the delta velocity incurred due to motion, since the last time the values were output by the device. The delta velocities are calculated based upon the onboard conning and sculling integration performed onboard the sensor at the IMU sampling rate. The integration for the delta velocities are reset each time the values are either polled or sent out due to a scheduled asynchronous ASCII or binary output.
+mag: optional[vnpy.Vec3f]
+The IMU compensated magnetic field given in the body-frame.  This measurement is compensated by the static calibration (individual factory calibration stored in flash), the user compensation, and the dynamic calibration from the onboard Hard/Soft Iron estimator.
+accel: optional[vnpy.Vec3f]
+The bias-compensated acceleration measured in the body-frame. This measurement is compensated by the static calibration (individual factory calibration stored in flash), the user compensation, and the dynamic bias compensation from the onboard Kalman filter (if applicable).
+angularRate: optional[vnpy.Vec3f]
+The bias-compensated angular rate measured in the body-frame.  This measurement is compensated by the static calibration (individual factory calibration stored in flash), the user compensation, and the dynamic bias compensation from the onboard Kalman filter.
+sensSat: optional[uint16_t]
+This field provides flags identifying whether any of the measurements are currently saturated.
+GnssGroup
+class GnssGroup
+gnss1TimeUtc: optional[vnpy.GnssTimeUtc]
+The current UTC time.  The year is given as a signed byte year offset from the year 2000.  For example the year 2013 would be given as year 13.
+gps1Tow: optional[vnpy.Time]
+The GPS time of week given in nano seconds.
+gps1Week: optional[uint16_t]
+The current GPS week.
+gnss1NumSats: optional[uint8_t]
+The number of tracked GNSS satellites.
+gnss1Fix: optional[uint8_t]
+The current GNSS fix.
+gnss1PosLla: optional[vnpy.Lla]
+The current GNSS position measurement given as the geodetic latitude, longitude and altitude above the ellipsoid.
+gnss1PosEcef: optional[vnpy.Vec3d]
+The current GNSS position given in the Earth centered Earth fixed (ECEF) reference frame.
+gnss1VelNed: optional[vnpy.Vec3f]
+The current GNSS velocity in the North East Down (NED) reference frame.
+gnss1VelEcef: optional[vnpy.Vec3f]
+The current GNSS velocity in the Earth centered Earth fixed (ECEF) reference frame.
+gnss1PosUncertainty: optional[vnpy.Vec3f]
+The current GNSS position uncertainty in the North East Down (NED) reference frame.
+gnss1VelUncertainty: optional[float]
+The current GNSS velocity uncertainty.
+gnss1TimeUncertainty: optional[float]
+The current GPS time uncertainty.
+gnss1TimeInfo: optional[vnpy.GnssTimeInfo]
+Flags for valid GPS TOW, week number and UTC and current leap seconds.
+gnss1Dop: optional[vnpy.GnssDop]
+Dilution of precision.
+gnss1SatInfo: optional[vnpy.GnssSatInfo]
+Information and measurements pertaining to each GNSS satellite in view.
+gnss1RawMeas: optional[vnpy.GnssRawMeas]
+Raw measurements pertaining to each GNSS satellite in view.
+gnss1Status: optional[vnpy.GnssStatus]
+GNSS Status info flags.
+gnss1AltMsl: optional[double]
+Altitude (Mean Sea Level).
+AttitudeGroup
+class AttitudeGroup
+ypr: optional[vnpy.Ypr]
+The estimated attitude describing the body frame with respect to the local North-East-Down (NED) frame given as the (3-2-1) set of Euler angles corresponding to Yaw-Pitch-Roll.
+quaternion: optional[vnpy.Quat]
+The estimated attitude describing the body frame with respect to the local North-East-Down (NED) frame given as the quaternion.
+dcm: optional[vnpy.Mat3f]
+The estimated attitude given as the directional cosine matrix (DCM) in column major order mapping the local North-East-Down (NED) frame into the body frame.
+magNed: optional[vnpy.Vec3f]
+The current estimated magnetic field given in the local North-East-Down (NED) frame.
+accelNed: optional[vnpy.Vec3f]
+The estimated acceleration (with gravity) given in the local North-East-Down (NED) frame.
+linBodyAcc: optional[vnpy.Vec3f]
+The estimated linear acceleration (without gravity) given in the body frame.
+linAccelNed: optional[vnpy.Vec3f]
+The estimated linear acceleration (without gravity) given in the local North-East-Down (NED) frame.
+yprU: optional[vnpy.Vec3f]
+The estimated attitude (Yaw, Pitch, Roll) uncertainty (1 Sigma), reported in degrees.
+heave: optional[vnpy.Vec3f]
+Real-time heave and heave-rate estimates, plus a delayed-heave estimate.
+attU: optional[float]
+The estimated uncertainty (1 Sigma) in the current attitude estimate.
+InsGroup
+class InsGroup
+insStatus: optional[vnpy.InsStatus]
+The INS status bitfield.
+posLla: optional[vnpy.Lla]
+The estimated position given as latitude, longitude, and altitude.
+posEcef: optional[vnpy.Vec3d]
+The estimate position given in the Earth centered Earth fixed (ECEF) frame.
+velBody: optional[vnpy.Vec3f]
+The estimated velocity in the body-frame.
+velNed: optional[vnpy.Vec3f]
+The estimated velocity in the North East Down (NED) frame.
+velEcef: optional[vnpy.Vec3f]
+The estimated velocity in the Earth centered Earth fixed (ECEF) frame.
+magEcef: optional[vnpy.Vec3f]
+The compensated magnetic measurement in the Earth centered Earth fixed (ECEF) frame.
+accelEcef: optional[vnpy.Vec3f]
+The estimated acceleration (with gravity) given in the Earth centered Earth fixed (ECEF) frame. The acceleration measurement has been bias compensated by the onboard INS filter. This measurement is attitude dependent because the attitude is used to map the measurement from the body-frame into the inertial (ECEF) frame. If the device is stationary and the INS filter is tracking, the measurement should be nominally equivalent to the gravity reference vector in the inertial frame (ECEF).
+linAccelEcef: optional[vnpy.Vec3f]
+The estimated linear acceleration (without gravity) and given in the Earth centered Earth fixed (ECEF) frame. This measurement is attitude dependent as the attitude solution is used to map the measurement from the body-frame into the inertial (ECEF) frame. This acceleration measurement has been bias compensated by the onboard INS filter, and the gravity component has been removed using the current gravity reference vector estimate. If the device is stationary and the onboard INS filter is tracking, the measurement will nominally read 0 on all three axes.
+posU: optional[float]
+The estimated uncertainty (1 Sigma) in the current position estimate.
+velU: optional[float]
+The estimated uncertainty (1 Sigma) in the current velocity estimate.
+Gnss2Group
+class Gnss2Group
+gnss2TimeUtc: optional[vnpy.GnssTimeUtc]
+The current UTC time.  The year is given as a signed byte year offset from the year 2000.  For example the year 2013 would be given as year 13.
+gps2Tow: optional[vnpy.Time]
+The GPS time of week given in nano seconds.
+gps2Week: optional[uint16_t]
+The current GPS week.
+gnss2NumSats: optional[uint8_t]
+The number of tracked GNSS satellites.
+gnss2Fix: optional[uint8_t]
+The current GNSS fix.
+gnss2PosLla: optional[vnpy.Lla]
+The current GNSS position measurement given as the geodetic latitude, longitude and altitude above the ellipsoid.
+gnss2PosEcef: optional[vnpy.Vec3d]
+The current GNSS position given in the Earth centered Earth fixed (ECEF) reference frame.
+gnss2VelNed: optional[vnpy.Vec3f]
+The current GNSS velocity in the North East Down (NED) reference frame.
+gnss2VelEcef: optional[vnpy.Vec3f]
+The current GNSS velocity in the Earth centered Earth fixed (ECEF) reference frame.
+gnss2PosUncertainty: optional[vnpy.Vec3f]
+The current GNSS position uncertainty in the North East Down (NED) reference frame.
+gnss2VelUncertainty: optional[float]
+The current GNSS velocity uncertainty.
+gnss2TimeUncertainty: optional[float]
+The current GPS time uncertainty.
+gnss2TimeInfo: optional[vnpy.GnssTimeInfo]
+Flags for valid GPS TOW, week number and UTC and current leap seconds.
+gnss2Dop: optional[vnpy.GnssDop]
+Dilution of precision.
+gnss2SatInfo: optional[vnpy.GnssSatInfo]
+Information and measurements pertaining to each GNSS satellite in view.
+gnss2RawMeas: optional[vnpy.GnssRawMeas]
+Raw measurements pertaining to each GNSS satellite in view.
+gnss2Status: optional[vnpy.GnssStatus]
+GNSS Status info flags.
+gnss2AltMsl: optional[double]
+Altitude (Mean Sea Level).
+Gnss3Group
+class Gnss3Group
+gnss3TimeUtc: optional[vnpy.GnssTimeUtc]
+The current UTC time.  The year is given as a signed byte year offset from the year 2000.  For example the year 2013 would be given as year 13.
+gps3Tow: optional[vnpy.Time]
+The GPS time of week given in nano seconds.
+gps3Week: optional[uint16_t]
+The current GPS week.
+gnss3NumSats: optional[uint8_t]
+The number of tracked GNSS satellites.
+gnss3Fix: optional[uint8_t]
+The current GNSS fix.
+gnss3PosLla: optional[vnpy.Lla]
+The current GNSS position measurement given as the geodetic latitude, longitude and altitude above the ellipsoid.
+gnss3PosEcef: optional[vnpy.Vec3d]
+The current GNSS position given in the Earth centered Earth fixed (ECEF) reference frame.
+gnss3VelNed: optional[vnpy.Vec3f]
+The current GNSS velocity in the North East Down (NED) reference frame.
+gnss3VelEcef: optional[vnpy.Vec3f]
+The current GNSS velocity in the Earth centered Earth fixed (ECEF) reference frame.
+gnss3PosUncertainty: optional[vnpy.Vec3f]
+The current GNSS position uncertainty in the North East Down (NED) reference frame.
+gnss3VelUncertainty: optional[float]
+The current GNSS velocity uncertainty.
+gnss3TimeUncertainty: optional[float]
+The current GPS time uncertainty.
+gnss3TimeInfo: optional[vnpy.GnssTimeInfo]
+Flags for valid GPS TOW, week number and UTC and current leap seconds.
+gnss3Dop: optional[vnpy.GnssDop]
+Dilution of precision.
+gnss3SatInfo: optional[vnpy.GnssSatInfo]
+Information and measurements pertaining to each GNSS satellite in view.
+gnss3RawMeas: optional[vnpy.GnssRawMeas]
+Raw measurements pertaining to each GNSS satellite in view.
+gnss3Status: optional[vnpy.GnssStatus]
+GNSS Status info flags.
+gnss3AltMsl: optional[double]
+Altitude (Mean Sea Level).

@@ -1,0 +1,120 @@
+Class Sensor
+Class Documentation
+class vectornav.Sensor
+This is the top-level class used by the SDK. In nominal operation, the user will instantiate a sensor object and interact directly with it.
+Serial Connectivity Methods
+connect(portName: str | PortName, baudRate: Sensor.BaudRate)
+Raises: VnError– If the COM port is not accessible.
+Opens the serial port at the specified baud rate and starts the Listening Thread. This does not verify any connectivity, and as such only validates that the serial port is available for opening.
+autoConnect(portName: str | PortName)
+Raises: VnError– If the COM port is not accessible or if the unit does not reply to connection verification.
+Opens the serial port and starts the Listening Thread, scanning all possible baud rates until the unit is verified to be connected. This performs a verifySensorConnectivity at each possible baud rate.
+verifySensorConnectivity() → bool
+Returns connectivityVerified: Whether a valid response was received from the unit.
+Sends a ReadRegister for the Model register. Returns true if a valid response is received, otherwise returns false.
+connectedPortName() → optional[str | vectornav.PortName]
+Returns portName: Name of the connected port.
+Gets the port name of the open serial port. If no port is open, will return None.
+connectedBaudRate() → optional[Sensor.BaudRate]
+Returns baudRate: BaudRate of the connected port.
+Gets the baud rate at which the serial port is opened. If no port is open, will return None.
+changeBaudRate(newBaudRate: Sensor.BaudRate)
+Raises: VnError– If passed a baud rate the system doesn’t support or if the unit did not reply to baud rate change command.
+Sends a Write Register for the new baud rate to the unit and reopens to the serial port under the new baud rate. Will retry on failure.
+changeHostBaudRate()
+Raises: VnError– If the host rejected the change baud rate request.
+Changes the host (computer) baud rate without commanding a change to the VectorNav unit’s baud rate. Use with caution.
+disconnect()
+Disconnects from the unit and closes the Listening Thread.
+class vectornav.Sensor.BaudRate
+Baud9600
+Baud19200
+Baud38400
+Baud57600
+Baud115200
+Baud128000
+Baud230400
+Baud460800
+Baud921600
+Measurement Accessor Methods
+hasMeasurement() → bool
+Checks to see if there is a new measurement available on the MeasurementQueue.
+getNextMeasurement(block: bool) → vectornav.CompositeData | None
+Parameters: block– If true, wait a maximum of getMeasurementTimeoutLength for a new measurement.
+Gets (and pops) the front of the MeasurementQueue.
+getMostRecentMeasurement(block: bool) → vectornav.CompositeData | None
+Parameters: block– If true, wait a maximum of getMeasurementTimeoutLength for a new measurement.
+Gets the back (most recent) of the MeasurementQueue, popping every measurement in the queue.
+Command Sending Methods
+readRegister(registerToRead: vectornav.Registers.Register, retryOnFailure: bool)
+Raises: VnError– If serial fails to send, no response is received, the received response is a synchronous VnErr, or the received response can not be parsed into the Register object.
+Sends a Read Register command to the unit to poll register values and blocks on the unit’s response.
+writeRegister(registerToWrite: vectornav.Registers.ConfigurationRegister, retryOnFailure: bool)
+Raises: VnError– If serial fails to send, no response is received, the received response is a synchronous VnErr, or the received response can not be parsed into the Register object.
+Sends a Write Register command to the unit to set register values and blocks on the unit’s response.
+writeSettings()
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Write Settings command to the unit and blocks on the unit’s confirmation.
+reset()
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Reset command to the unit and blocks on the unit’s confirmation. After confirmation, it sleeps for resetSleepDuration and verifies sensor connectivity, calling autoConnect if failed.
+restoreFactorySettings()
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Restore Factory Settings command to the unit, blocks on the unit’s confirmation, reopens serial at the unit’s default baud rate, sleeps for resetSleepDuration, then verifies unit connectivity. If THREADING_ENABLE, resets the Listening Thread.
+knownMagneticDisturbance(state: vectornav.KnownMagneticDisturbance.State)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Known Magnetic Distrubance command to the sensor and blocks on the unit’s message confirmation.
+knownAccelerationDisturbance(state: vectornav.KnownAccelerationDisturbance.State)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Known Acceleration Disturbance command to the sensor and blocks on the unit’s message confirmation.
+setInitialHeading(const float heading: float)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Set Initial Heading command to the sensor and blocks on the unit’s message confirmation.
+setInitialHeading(ypr: vectornav.Ypr)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Set Initial Heading command to the sensor and blocks on the unit’s message confirmation.
+setInitialHeading(quat: vectornav.Quat)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Set Initial Heading command to the sensor and blocks on the unit’s message confirmation.
+asyncOutputEnable(state: vectornav.AsyncOutputEnable.State)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends an Async Output Enable command to the sensor and blocks on the unit’s message confirmation.
+setFilterBias()
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Set Filter Bias command to the sensor and blocks on the unit’s message confirmation.
+setBootloader(processorId: vectornav.SetBootLoader.Processor)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends a Set Bootloader command to the sensor and blocks on the unit’s message confirmation.
+class SendCommandBlockMode
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Block mode for sendCommand.
+None
+Do not wait for a response from the unit before returning.
+Block
+Block upon a response from the unit until the specific timeout; will return ResponseTimeout if timeout is hit.
+BlockWithRetry
+Block upon a response from the unit until the specific timeout; retry sending the command and blocking commandSendRetriesAllowed times before returning ResponseTimeout.
+sendCommand(commandToSend: vectornav.Command, waitMode: SendCommandBlockMode, waitLength: int)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends an arbitrary command to the unit. The direct command API should be preferred unless it necessary to send without blocking.
+serialSend(msgToSend: str | AsciiMessage)
+Raises: VnError– If serial fails to send, no response is received, or the received response is a synchronous VnErr.
+Sends an arbitary message to the unit without any message modification or response validation. Not recommended for use.
+Additional Logging Methods
+registerSkippedByteBuffer(skippedByteBuffer: vectornav.ByteBuffer)
+Registers a ByteBuffer to be populated (write only) with every byte that is not parsable using any known protocol.  Only one can be registered at a time.
+deregisterSkippedByteBuffer()
+Deregisters the ByteBuffer previously registered to be populated with skipped bytes, if applicable. If not, it has no effect.
+registerReceivedByteBuffer(receivedByteBuffer: vectornav.ByteBuffer)
+Registers a ByteBuffer to be populated (write only) with every byte received by the serial port. Only one can be registered at a time.
+deregisterReceivedByteBuffer()
+Deregisters the ByteBuffer previously registered to be populated with received bytes, if applicable. If not, it has no effect.
+subscribeToMessage(queueToSubscribe: PacketQueue_Interface, asciiHeaderFilter: str | AsciiHeader, filterType: AsciiSubscriberFilterType)
+Subscribes a queue to be populated (write only) with every matching measurement message as received. Multiple can be simultaneously registered.
+unsubscribeFromMessage(queueToUnsubscribe: PacketQueue_Interface, filter: BinaryOutputMeasurements)
+Unsubscribes the passed queue from all messages matching the passed filter.
+unsubscribeFromMessage(queueToUnsubscribe: PacketQueue_Interface, filter: AsciiHeader)
+Unsubscribes the passed queue from all messages matching the passed filter.
+Error Handling Methods
+getAsynchronousError() → AsyncError | None
+Gets the next asynchronous error in the queue.

@@ -1,0 +1,63 @@
+
+Simple Logger
+#############
+
+The SimpleLogger plugin contains everything necessary to log data from a VectorNav sensor to a binary file.
+
+Usage
+=====
+
+To use the SimpleLogger plugin, first import all the necessary modules:
+
+.. code-block:: python
+
+    import vectornav
+    from vectornav.Plugins import SimpleLogger
+
+The :py:class:`~vectornav.Plugins.SimpleLogger` requires a :py:class:`~vectornav.ByteBuffer` object and the path of the desired log file. The ByteBuffer is a user-defined buffer where bytes will temporarily be stored before they are written to the log file.
+
+.. code-block:: python
+
+    bufferToLog = ByteBuffer(8192)
+
+    simpleLogger = SimpleLogger(bufferToLog, "log.bin")
+
+Once the ByteBuffer and SimpleLogger class are instatiated, register the ByteBuffer with the sensor object as follows:
+
+.. code-block:: python
+
+    vs.registerReceivedByteBuffer(bufferToLog)
+
+To start logging data from the sensor, you must issue the start method. This creates a new thread that will write data to file when there is enough time to do so. This prevents file write operations from blocking the main thread.
+
+.. code-block:: python
+
+	if (logger.start()):
+		print("Error: Failed to write to file")
+
+Ensure that :py:meth:`~vectornav.Plugins.SimpleLogger.start` is succesful, otherwise the logger was not able to create the file. Stopping the logger is just as easy -- just call :py:meth:`~vectornav.Plugins.SimpleLogger.stop` and deregister the ByteBuffer. 
+
+.. code-block:: python
+
+    logger.stop()
+    vs.deregisterReceivedByteBuffer()
+
+SimpleLogger API
+================
+
+SimpleLogger
+^^^^^^^^^^^^
+
+.. py:class:: vectornav.Plugins.SimpleLogger(byteBuffer: ByteBuffer, filePath: str)
+
+    .. py:method:: start
+
+        Starts a backgroud thread to log data to the specified file
+
+    .. py:method:: stop
+
+        Stops the logging thread and closes the file
+    
+    .. py:method:: isLogging
+
+        Checks if the logger is actively logging

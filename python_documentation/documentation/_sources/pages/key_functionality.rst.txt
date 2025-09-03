@@ -1,0 +1,215 @@
+Key Functionality
+#################
+
+Establishing Communication
+==========================
+
+Connecting to the Sensor
+------------------------
+
+It is first necessary to initialize a :py:class:`~vectornav.Sensor` object, using which we will send commands to the VectorNav unit.
+
+.. code-block:: python
+
+    from vectornav import Sensor, Registers
+    vs = Sensor()
+
+We can then connect to the VectorNav unit using the :meth:`Sensor.autoconnect` method 
+
+.. code-block:: python
+
+    vs.autoConnect("COM1")
+
+.. tip::
+    If the baud rate is known then the :meth:`Sensor.connect` method can be used, which accepts an extra parameter of the expected baud rate.
+    This is a quicker call, as it does not require scanning all the baud rates.
+    However, this method does not perform any verification of connectivity, so it is necessary to call :meth:`Sensor.verifySensorConnectivity` to ensure communication.
+
+    .. code-block:: python
+
+        vs.connect("COM1", Sensor.BaudRate.Baud115200)
+        if not vs.verifySensorConnectivity():
+            raise Exception("Wrong baud rate or incorrect port")
+
+    If the :meth:`Sensor.autoconnect` method is used, no :meth:`Sensor.autoconnect` method call is necessary, as it verifies connectivity through the auto connection process at each baud rate. It is therefore the slower of the two methods, by default requiring a maximum of 4.5 seconds.
+
+    To maintain robustness while utilizing the speed of the :meth:`Sensor.connect` method, the :meth:`Sensor.autoconnect` method can be used as a fallback if :meth:`Sensor.verifySensorConnectivity` fails.
+
+    .. code-block:: python
+
+        vs.connect("COM1", Sensor.BaudRate.Baud115200)
+        if not vs.verifySensorConnectivity():
+            vs.autoConnect("COM1")
+            
+
+Changing the Baud Rate
+----------------------
+
+Once communication has been established, the baud rate can be reconfigured at any point using the :meth:`Sensor.changeBaudRate` method.
+
+.. code-block:: python 
+
+    vs.changeBaudRate(Sensor.BaudRate.Baud921600)
+
+.. note::
+   The `changeBaudRate` method will send a command to the unit to reconfigure its baud rate, disconnect from the serial port, and reconnect to the serial port at the specified new baud rate.
+
+.. tip::
+   To ensure the baud rate change persists over a unit power cycle, a :meth:`Sensor.writeSettings` command should be sent.
+   
+   .. code-block:: python
+
+      vs.writeSettings()
+
+Disconnecting From the Sensor
+-----------------------------
+
+To disconnect from the unit, the :meth:`Sensor.disconnect` method can be called.
+
+.. code-block:: python 
+    
+    vs.disconnect()
+
+Accessing Registers
+===================
+All configuration settings and many measurements are stored in one of 256 registers, which are accessible via synchronous polling and synchronous writing. 
+Each of these registers are their own class with the fields for each register being public members of that class.
+All of the register classes exist in :py:class:`vectornav.Registers` and a namespace for the register group. 
+For example, the ``SynchronizationControl`` class can either be accessed as :py:class:`vectornav.Registers.System.SyncControl`.
+
+Both measurement registers and configuration registers can be read, whereas only configuration registers can be written. This is accomplished best using the :meth:`Sensor.readRegister` and :meth:`Sensor.writeRegister` methods, which are discussed in the following sections. 
+
+The fields in each ``Register`` object will match the fields listed in the latest ICD, which can be downloaded directly from VectorNav's website.
+
+Reading Registers
+-----------------
+As discussed in :ref:`pages/key_functionality:Accessing Registers`, the :meth:`Sensor.readRegister` method is the preferred method to read registers. To do so, you must 
+   #. Create a ``Register`` object to be populated by the received response
+   #. Call the ``readRegister`` method
+   #. Access the received values in the original ``Register`` object
+
+.. literalinclude:: ../../examples/getting_started/getting_started.py
+   :language: python
+   :start-after: #### 2
+   :end-before: #### 3
+   :dedent: 4
+
+Writing Registers
+-----------------
+As discussed in :ref:`pages/key_functionality:Accessing Registers`, the :meth:`Sensor.writeRegister` method is the preferred method to read registers. To do so, you must
+   #. Create a ``Register`` object
+   #. Populate the ``Register`` object with the desired values to configure the unit
+   #. Call the ``writeRegister`` method
+
+.. literalinclude:: ../../examples/getting_started/getting_started.py
+   :language: python
+   :start-after: #### 4
+   :end-before: asyncDataOutputFreq= Registers.AsyncOutputFreq()
+   :dedent: 4
+
+.. tip::
+   To ensure register values are not unintentionally changed, it may be preferred to first read a register, change only the desired parameter, and write the register back to the unit. This can be accomplished as follows:
+
+   .. code-block:: python
+
+      from vectornav import Registers
+      reg = SyncControl()
+      vs.readRegister(reg)
+      reg.syncOutMode = SyncControl.SyncOutMode.ImuStart
+      reg.syncOutSkipFactor = 8
+      vs.writeRegister(reg)
+
+Reading Measurements
+====================
+
+By default, all asynchronous measurements (except *gnssSatInfo* and *gnssRawMeas*), whether sourced from ASCII or binary outputs, are made available as a :py:class:`vectornav.CompositeData` object on the ``MeasurementQueue`` contained within the ``Sensor`` object once the packet is parsed.
+
+The Composite Data Object
+-------------------------
+
+A ``CompositeData`` object contains each measurement group (e.g. `Attitude`), each of which is a structure containing each measurement type (e.g. `Ypr`). 
+Exactly one ``CompositeData`` object is populated for each measurement message, each of which contain a subset of the possible measurement types. 
+Because a measurement message likely does not contain each enabled measurement, the measurements that do not have values in the message will hold a value of `None`.
+    
+.. code-block:: python
+
+    accel := cd.imu.accel
+
+.. note::
+   The ``CompositeData`` class does not contain the `Common` group. As such, any measurement types populated via a binary measurement in the `Common` group will show up in the underlying group. For example, a binary message which contains `Ypr` from the `Common` group will be populated in the ``attitude`` member of a ``CompositeData`` object.
+
+How to Read a Measurement
+-------------------------
+
+Reading a measurement from the sensor can be done using the following steps.
+
+#. Get a ``CompositeData`` object using the :meth:`Sensor.getNextMeasurement` or :meth:`Sensor.getMostRecentMeasurement` methods.
+
+#. Validate the measurement you want is in the ``CompositeData`` object. This can be done by using the :meth:`CompositeData.matchesMessage` method. Alternatively, you could check that each individual measurement is not `None`.
+
+#. Access the measurement value.
+
+The following code block shows and example of reading measurements from a VectorNav sensor.
+
+.. code-block:: python
+
+    while (1):
+        cd = vs.getNextMeasurement()
+        if not cd: continue
+    
+        if cd.matchesMessage("VNINS"):
+            ypr = cd.attitude.ypr
+            print(f"YPR: {ypr}")
+
+Sending Commands 
+================
+
+Each command able to be sent to the unit is available as a public method of the :py:class:`vectornav.Sensor` class. They are all blocking calls; if non-blocking commands are necessary, refer to the :ref:`pages/advanced_functionality:Non-Blocking Commands` section.
+To send a command, simply call the public method with the necessary parameters, if applicable. For example, to send a `Set Initial Heading` command, you can call
+
+.. code-block:: python
+
+   vs.setInitialHeading(45)
+
+
+Logging Data
+============
+
+Refer to the :ref:`plugins/simple_logger:Simple Logger` documentation.
+
+Error Handling
+==============
+
+Errors can be generated either synchronously—a direct result of a user call—or asynchronously—occurring independent of a user call. 
+
+Synchronous Errors
+------------------
+
+Synchronous errors are errors from a function that can raise an exception. To ensure Python scripts utilizing the VNSDK are robust, it is important to understand how errors are exposed to the user. All user-facing functions in the Sensor class will throw unless otherwise specified. This means synchronous errors will terminate the program by default unless appropriate error handling is provided. As an example, assume an auto connect routine is needed that will wait for a USB device to be plugged in on a specific COM port before proceeding.
+
+
+.. code-block:: python
+
+    while True:
+        try:
+            print(f"Attempting to connect to {COM_PORT} ...")
+            time.sleep(2) # sleep for two seconds
+            sensor.connect(COM_PORT, Sensor.BaudRate.Baud115200)
+            break
+        except Exception as e:
+            print(e)
+
+    print("connected")
+
+    
+Asynchronous Errors
+-------------------
+
+Asynchronous errors are errors that are not associated with a function call and can occur at any time. For these errors the VNSDK provides an :py:class:`vectornav.AsyncError` queue that should be periodically checked. For example, a program may have a check if data has not been received in a certain period of time. Checking the error queue may reveal a sensor Hard Fault which would require the sensor to be reset.
+
+.. code-block:: python
+
+    if (error := sensor.getAsychronousError()):
+        print(f"Error {error.error}: {error.message}")
+        # handle error here
+
