@@ -1,0 +1,14 @@
+.. _exhale_define__serial___mbed_8hpp_1a2592894a918f02bb79b35b7388f7bf92:
+
+Define MBED_NO_GLOBAL_USING_DIRECTIVE
+=====================================
+
+- Defined in :ref:`file_include_vectornav_HAL_Serial_Mbed.hpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: MBED_NO_GLOBAL_USING_DIRECTIVE
+   :project: VectorNav SDK

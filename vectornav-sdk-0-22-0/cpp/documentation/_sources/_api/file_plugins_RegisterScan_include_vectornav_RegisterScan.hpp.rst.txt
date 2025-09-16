@@ -1,0 +1,92 @@
+
+.. _file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp:
+
+File RegisterScan.hpp
+=====================
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_RegisterScan_include_vectornav>` (``plugins\RegisterScan\include\vectornav``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``plugins\RegisterScan\include\vectornav\RegisterScan.hpp``)
+------------------------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``utility``
+
+- ``vectornav/ConfigReader.hpp``
+
+- ``vectornav/ConfigWriter.hpp``
+
+- ``vectornav/Interface/Registers.hpp``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_plugins_RegisterScan_src_RegisterScan.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+- :ref:`namespace_VN__RegisterScan`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_register_scan_1_1_save_configuration_filter`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function__register_scan_8hpp_1a893f172e3b24ae10cf4fea6e896f1d19`
+
+- :ref:`exhale_function__register_scan_8hpp_1a50392bf114530c3d1eba464b70322862`
+
+- :ref:`exhale_function__register_scan_8hpp_1abf7ae3f8ee4b59d51dd8f2934dbb7a13`
+
+- :ref:`exhale_function__register_scan_8hpp_1a434daf5134bdd71aa378b843caf0e741`
+
+- :ref:`exhale_function__register_scan_8hpp_1a75aa328f848042c0b306a2099fa91991`
+
+- :ref:`exhale_function__register_scan_8hpp_1a27f7d0ea0bd00291ee4f9680ce750151`
+
+- :ref:`exhale_function__register_scan_8hpp_1a595ccd9f2f2e7a4bbd566a81655f7012`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable__register_scan_8hpp_1ad06f34a8fa1027416e7f12a9ee18549a`
+

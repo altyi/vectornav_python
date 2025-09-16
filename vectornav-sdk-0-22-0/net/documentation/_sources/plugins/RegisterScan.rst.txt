@@ -1,0 +1,6 @@
+.. _RegisterScanPage:
+
+Register Scan
+#############
+
+:class:`VNSDK::SensorConfigurator`

@@ -1,0 +1,19 @@
+.. _RegisterScanPage:
+
+Register Scan
+#############
+
+ADD WORDS HERE
+
+The Register Scan plugin is a newly added plugin unique to the VNSDK.
+This plugin is capable of producing an XML or text file containing the non-default registers on the unit, or uploading an XML or text file of register values to the unit. It is similar to and interoperable with the "Save Config" and "Load Config" buttons on Control Center.
+
+Usage
+=====
+
+ADD WORDS HERE
+
+API
+===
+
+ADD WORDS HERE

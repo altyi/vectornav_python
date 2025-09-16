@@ -1,0 +1,67 @@
+
+.. _program_listing_file_include_vectornav_HAL_Timer_Mbed.hpp:
+
+Program Listing for File Timer_Mbed.hpp
+=======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_Timer_Mbed.hpp>` (``include\vectornav\HAL\Timer_Mbed.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_TIMER_MBED_HPP_
+   #define VN_TIMER_MBED_HPP_
+   
+   #include "rtos/include/rtos/Kernel.h"
+   #define MBED_NO_GLOBAL_USING_DIRECTIVE 0  // disable mbed namespace
+   #include "mbed.h"
+   #include "vectornav/HAL/Timer_Base.hpp"
+   
+   namespace VN
+   {
+   
+   using time_point = rtos::Kernel::Clock::time_point;
+   inline time_point now() noexcept { return rtos::Kernel::Clock::now(); }
+   
+   class Timer : Timer_Base
+   {
+   public:
+       Timer() {}
+       Timer(Microseconds timerLength) : _timerLength(timerLength) {}
+   
+       void setTimerLength(Microseconds timerLength) noexcept override final
+       {
+           _timerLength = timerLength;
+           hasStarted = false;
+       }
+   
+       void start() noexcept override final
+       {
+           _timeStarted = Clock::now();
+           hasStarted = true;
+       }
+   
+       bool hasTimedOut() const noexcept override final
+       {
+           if (!hasStarted) { return false; }
+           return (Clock::now() - _timeStarted) >= _timerLength;
+       }
+   
+       Nanoseconds timeElapsed() const noexcept
+       {
+           // Used only for profiling
+           if (!hasStarted) { return 0ns; }
+           return Clock::now() - _timeStarted;
+       }
+   
+   private:
+       using Clock = rtos::Kernel::Clock;
+   
+       Clock::time_point _timeStarted;
+       Microseconds _timerLength{0};
+       bool hasStarted = false;
+   };
+   
+   }  // namespace VN
+   #endif  // VN_TIMER_MBED_HPP_

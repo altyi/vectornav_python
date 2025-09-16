@@ -1,0 +1,14 @@
+.. _exhale_variable__c_l_i___measurement_datatypes_8hpp_1a487742b55b6d1e4a33cb90ce2ac0e05a:
+
+Variable VNSDK::SATELLITE_MAX_COUNT
+===================================
+
+- Defined in :ref:`file_documentation__include_vectornav_CLI_MeasurementDatatypes.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VNSDK::SATELLITE_MAX_COUNT
+   :project: VectorNav SDK

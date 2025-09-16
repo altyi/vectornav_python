@@ -1,0 +1,14 @@
+.. _exhale_function__conversions_8hpp_1a64673d7431f72c6866e3b0658a0d1987:
+
+Template Function VN::Math::rad2deg(Matrix<n, m, T>)
+====================================================
+
+- Defined in :ref:`file_plugins_Math_vectornav_Conversions.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Math::rad2deg(Matrix<n, m, T>)
+   :project: VectorNav SDK

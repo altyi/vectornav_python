@@ -1,0 +1,62 @@
+
+.. _program_listing_file_include_vectornav_HAL_Serial_Wasm.hpp:
+
+Program Listing for File Serial_Wasm.hpp
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_Serial_Wasm.hpp>` (``include\vectornav\HAL\Serial_Wasm.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_SERIAL_WASM_HPP_
+   #define VN_SERIAL_WASM_HPP_
+   
+   #include <iomanip>
+   #include <iostream>
+   #include <string>
+   
+   #include "vectornav/Config.hpp"
+   #include "vectornav/HAL/Serial_Base.hpp"
+   #include "vectornav/TemplateLibrary/String.hpp"
+   
+   namespace VN
+   {
+   
+   class Serial : public Serial_Base
+   {
+   public:
+       using Serial_Base::Serial_Base;
+   
+       // ***********
+       // Port access
+       // ***********
+       Error open(const PortName& portName, const uint32_t baudRate) noexcept override final;
+       void close() noexcept override;
+       Error changeBaudRate(const uint32_t baudRate) noexcept override final;
+   
+       // ***************
+       // Port read/write
+       // ***************
+       Error getData() noexcept override final;
+       Error send(const AsciiMessage& message) noexcept override final;
+   
+   private:
+       // ***********
+       // Port access
+       // ***********
+       PortName _portName = "";
+       bool _isOpen = false;
+       uint32_t _baudrate = 0;
+   
+       // ***************
+       // Port read/write
+       // ***************
+       bool _flush();
+       std::array<uint8_t, _numBytesToReadPerGetData> _inputBuffer{};
+   };
+   
+   }  // namespace VN
+   
+   #endif  // VN_SERIAL_WASM_HPP_

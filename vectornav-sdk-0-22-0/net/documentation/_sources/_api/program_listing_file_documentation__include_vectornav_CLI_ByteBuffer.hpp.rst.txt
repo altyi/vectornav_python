@@ -1,0 +1,45 @@
+
+.. _program_listing_file_documentation__include_vectornav_CLI_ByteBuffer.hpp:
+
+Program Listing for File CLI_ByteBuffer.hpp
+===========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_documentation__include_vectornav_CLI_ByteBuffer.hpp>` (``documentation\_include\vectornav\CLI_ByteBuffer.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CLI_BYTEBUFFER_HPP_
+   #define VN_CLI_BYTEBUFFER_HPP_
+   
+   #include "vectornav/TemplateLibrary/ByteBuffer.hpp"
+   
+   namespace VNSDK
+   {
+        class ByteBuffer
+       {
+       private:
+           VN::ByteBuffer *buffer = nullptr;
+   
+       public:
+           ByteBuffer(int size)
+           {
+               buffer = new VN::ByteBuffer(size);
+           };
+   
+           ~ByteBuffer()
+           {
+               delete buffer;
+               buffer = nullptr;
+           };
+           
+           VN::ByteBuffer* GetReference()
+           {
+               return buffer;
+           };
+       };
+   
+   }
+   
+   #endif  // VN_CLI_BYTEBUFFER_HPP_

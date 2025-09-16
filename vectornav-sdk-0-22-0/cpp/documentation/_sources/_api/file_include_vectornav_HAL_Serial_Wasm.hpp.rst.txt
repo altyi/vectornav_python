@@ -1,0 +1,62 @@
+
+.. _file_include_vectornav_HAL_Serial_Wasm.hpp:
+
+File Serial_Wasm.hpp
+====================
+
+|exhale_lsh| :ref:`Parent directory <dir_include_vectornav_HAL>` (``include\vectornav\HAL``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``include\vectornav\HAL\Serial_Wasm.hpp``)
+------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_include_vectornav_HAL_Serial_Wasm.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``iomanip``
+
+- ``iostream``
+
+- ``string``
+
+- ``vectornav/Config.hpp``
+
+- ``vectornav/HAL/Serial_Base.hpp``
+
+- ``vectornav/TemplateLibrary/String.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_class_v_n_1_1_serial`
+

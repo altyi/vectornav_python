@@ -1,0 +1,54 @@
+
+.. _program_listing_file_plugins_RegisterScan_src_RegisterScan.cpp:
+
+Program Listing for File RegisterScan.cpp
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_plugins_RegisterScan_src_RegisterScan.cpp>` (``plugins\RegisterScan\src\RegisterScan.cpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #include "vectornav/RegisterScan.hpp"
+   
+   namespace VN
+   {
+   
+   namespace RegisterScan
+   {
+   
+   VN::Error _setConfigurationRegister(Sensor& sensor, const AsciiMessage& msg)
+   {
+       Error error = Error::None;
+       std::cout << "Loading setting: " << msg.c_str() << "\n";
+       const uint16_t start = msg.find(',', 0);
+       const uint16_t end = msg.find(',', start + 1);
+       if (start == AsciiMessage::npos || start >= msg.length() || end == AsciiMessage::npos || end >= msg.length())
+       {
+           error = Error::ReceivedUnexpectedMessage;
+           return error;
+       }
+       std::optional<uint8_t> regId = StringUtils::fromString<uint8_t>(&msg[start + 1], &msg[end]);
+   
+       const auto first_comma = msg.find(',');
+       const auto asterisk = msg.find('*');
+   
+       if (!regId.has_value()) { return Error::InvalidRegister; }
+       AsciiMessage cmd_str;
+       std::snprintf(cmd_str.data(), cmd_str.capacity(), "WRG,%.*s", static_cast<int>(asterisk - first_comma - 1), &msg[first_comma + 1]);
+       auto wrg = GenericCommand(cmd_str);
+   
+       if (regId.value() == 5)
+       {
+           Registers::System::BaudRate baudReg;
+           if (baudReg.fromString(msg)) { error = Error::InvalidParameter; }
+           else { error = sensor.changeBaudRate(baudReg.baudRate, baudReg.serialPort); }
+       }
+       else { error = sensor.sendCommand(&wrg, Sensor::SendCommandBlockMode::Block); }
+   
+       return error;
+   }
+   
+   }  // namespace RegisterScan
+   }  // namespace VN

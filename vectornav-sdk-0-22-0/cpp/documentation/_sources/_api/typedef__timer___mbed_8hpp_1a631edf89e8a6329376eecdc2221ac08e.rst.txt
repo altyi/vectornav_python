@@ -1,0 +1,14 @@
+.. _exhale_typedef__timer___mbed_8hpp_1a631edf89e8a6329376eecdc2221ac08e:
+
+Typedef VN::time_point
+======================
+
+- Defined in :ref:`file_include_vectornav_HAL_Timer_Mbed.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::time_point
+   :project: VectorNav SDK

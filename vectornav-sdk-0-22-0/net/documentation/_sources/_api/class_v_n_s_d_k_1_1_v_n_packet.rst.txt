@@ -1,0 +1,17 @@
+.. _exhale_class_class_v_n_s_d_k_1_1_v_n_packet:
+
+Class VNPacket
+==============
+
+- Defined in :ref:`file_documentation__include_vectornav_CLI_Packet.hpp`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: VNSDK::VNPacket
+   :project: VectorNav SDK
+   :members:
+   :protected-members:
+   :undoc-members:

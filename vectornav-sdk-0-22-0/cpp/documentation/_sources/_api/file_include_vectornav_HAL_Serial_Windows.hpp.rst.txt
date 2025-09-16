@@ -1,0 +1,69 @@
+
+.. _file_include_vectornav_HAL_Serial_Windows.hpp:
+
+File Serial_Windows.hpp
+=======================
+
+|exhale_lsh| :ref:`Parent directory <dir_include_vectornav_HAL>` (``include\vectornav\HAL``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``include\vectornav\HAL\Serial_Windows.hpp``)
+---------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_include_vectornav_HAL_Serial_Windows.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``exception``
+
+- ``string``
+
+- ``vectornav/Config.hpp``
+
+- ``vectornav/HAL/Serial_Base.hpp``
+
+- ``vectornav/TemplateLibrary/String.hpp``
+
+- ``windows.h``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_class_v_n_1_1_serial`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define__serial___windows_8hpp_1a9f918755b601cf4bffca775992e6fb90`
+

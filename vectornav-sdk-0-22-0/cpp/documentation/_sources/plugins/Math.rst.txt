@@ -1,0 +1,19 @@
+
+Math
+####
+
+The Math plugin includes several functions, universal constants, and operator overloads that are available to the user to be used within their code base.
+
+Usage
+=====
+
+* Temperature and angle conversions are located in the :ref:`namespace_VN__Conversions`.
+* Conversions that are related to attitude are located in the :ref:`namespace_VN__AttConversions`. This includes conversions related between the DCM, quaternions, and Ypr. This is also where quaternion propagation and vector math can be found.
+* Any calculations related to position and velocity can be found in the :ref:`namespace_VN__PosVelConversions`. This includes course and speed over ground calculations and the conversions between Earth-centered Earth-fixed (ECEF) and latitude, longitude, altitude (LLA) coordinates.
+* All math related to linear algebra can be found in the :ref:`namespace_VN__LinAlg`. Some helpful functions located here are the inverse, transpose, dot product, and cross product.
+* Matrix operator overloads along with the identity and null functions can be found in the :class:`VN::Matrix`.
+
+API
+===
+
+ADD WORDS HERE

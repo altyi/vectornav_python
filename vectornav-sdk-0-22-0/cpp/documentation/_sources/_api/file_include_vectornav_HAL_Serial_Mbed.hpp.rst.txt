@@ -1,0 +1,69 @@
+
+.. _file_include_vectornav_HAL_Serial_Mbed.hpp:
+
+File Serial_Mbed.hpp
+====================
+
+|exhale_lsh| :ref:`Parent directory <dir_include_vectornav_HAL>` (``include\vectornav\HAL``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``include\vectornav\HAL\Serial_Mbed.hpp``)
+------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_include_vectornav_HAL_Serial_Mbed.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Serial_Base.hpp`` (:ref:`file_include_vectornav_HAL_Serial_Base.hpp`)
+
+- ``array``
+
+- ``cstdint``
+
+- ``mbed.h``
+
+- ``vectornav/Config.hpp``
+
+- ``vectornav/TemplateLibrary/String.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_class_v_n_1_1_serial`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define__serial___mbed_8hpp_1a2592894a918f02bb79b35b7388f7bf92`
+

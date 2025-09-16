@@ -1,0 +1,77 @@
+.. _cppDataExportPage:
+
+Data Export
+###########
+
+The Data Export plugin allows the user to export data to a *CSV*, *TXT*, or *RINEX*. 
+The plugin can handle data from either previously logged binary files or data directly from a VectorNav unit.
+Additionally, it can handle outputting to multiple different formats at once.
+
+Usage
+=====
+
+There are two examples for the Data Export plugin. 
+One will show how to export the data from a previously logged file and the other will step through the process to log the data directly from the sensor.
+
+Exporting from a file
+^^^^^^^^^^^^^^^^^^^^^
+
+When logging the data from a file, a :class:`VN::FileExporter` object must be created and an exporter class added.
+
+.. code-block:: cpp
+
+    FileExporter fileExporter;
+    fileExporter.addExporter(std::make_unique<ExporterCsv>(outputDirectory));
+
+Each of the following exporter types can be obtained from the 
+:class:`VN::Exporter` class.
+
+* :class:`VN::ExporterAscii` - export to a *TXT* file
+* :class:`VN::ExporterCsv` - export to a *CSV* file
+* :class:`VN::ExporterRinex` - export to a *RINEX* file
+
+The example can be run with either a hardcoded input file path or as a command-line executable.
+If using the command line the argument will be the input file path:
+
+.. code-block::
+    .\ExportFromFile.exe "DataExportFromFile.bin"
+
+Exporting in Real-Time
+^^^^^^^^^^^^^^^^^^^^^^
+
+When using the Data Export plugin with the sensor, an object for the export file type and a ``Sensor`` object first needs to be created. For this example, the ``ExporterCsv`` class is used.
+
+.. code-block:: cpp
+
+    ExporterCsv csvExporter((fs::path(__FILE__).parent_path()).string() + '/', true);
+    
+    Sensor sensor;
+    sensor.autoConnect(PortName);
+
+Once the initialization is complete, the sensor needs to suscribe to the certain message types wanted. In the below example, first the VectorNav FA binary packets are suscribed to and then the VectorNav ASCII messages.
+
+.. code-block:: cpp
+    sensor.subscribeToMessage(csvExporter.getQueuePtr(), Sensor::BinaryOutputMeasurements{}, Sensor::FaSubscriberFilterType::AnyMatch);
+
+    sensor.subscribeToMessage(csvExporter.getQueuePtr(), "VN", Sensor::AsciiSubscriberFilterType::StartsWith);
+
+..  note::
+    Please note that when using the ``Exporter`` classes with the sensor, the exporter must be started and stopped manually.
+
+API
+===
+
+ExporterCsv
+^^^^^^^^^^^
+
+ExporterAscii
+^^^^^^^^^^^^^
+
+ExporterRinex
+^^^^^^^^^^^^^
+
+ExporterImr
+^^^^^^^^^^^
+
+FileExporter
+^^^^^^^^^^^^

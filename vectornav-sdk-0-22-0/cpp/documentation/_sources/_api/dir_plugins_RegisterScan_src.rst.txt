@@ -1,0 +1,23 @@
+.. _dir_plugins_RegisterScan_src:
+
+
+Directory src
+=============
+
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_RegisterScan>` (``plugins\RegisterScan``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+*Directory path:* ``plugins\RegisterScan\src``
+
+
+Files
+-----
+
+- :ref:`file_plugins_RegisterScan_src_ConfigReader.cpp`
+- :ref:`file_plugins_RegisterScan_src_ConfigWriter.cpp`
+- :ref:`file_plugins_RegisterScan_src_RegisterScan.cpp`
+
+

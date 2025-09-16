@@ -1,0 +1,59 @@
+
+.. _program_listing_file_include_vectornav_HAL_Thread_Mbed.hpp:
+
+Program Listing for File Thread_Mbed.hpp
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_Thread_Mbed.hpp>` (``include\vectornav\HAL\Thread_Mbed.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_THREAD_MBED_HPP_
+   #define VN_THREAD_MBED_HPP_
+   
+   #define MBED_NO_GLOBAL_USING_DIRECTIVE 0
+   #include <chrono>
+   
+   #include "mbed.h"
+   #include "vectornav/HAL/Thread_Base.hpp"
+   
+   namespace VN
+   {
+   
+   class Thread : public Thread_Base
+   {
+   public:
+       Thread() {};
+       Thread(const Thread&) = delete;
+   
+       template <typename Callable, typename Args>
+       explicit Thread(Callable&& f, Args&& args)
+       {
+           _thread.start(mbed::callback(std::forward<Args>(args), std::forward<Callable>(f)));
+       }
+   
+       ~Thread() { _thread.join(); }
+   
+       void join() override final { _thread.join(); }
+   
+       void detach() override final {}
+   
+       bool joinable() const override final { return true; }
+   
+   private:
+       rtos::Thread _thread;
+   };
+   
+   namespace thisThread
+   {
+   inline void sleepFor(const Microseconds sleepDuration) noexcept
+   {
+       rtos::ThisThread::sleep_for(std::chrono::duration_cast<rtos::Kernel::Clock::duration_u32>(sleepDuration));
+   }
+   
+   }  // namespace thisThread
+   
+   }  // namespace VN
+   #endif  // VN_THREAD_MBED_HPP_

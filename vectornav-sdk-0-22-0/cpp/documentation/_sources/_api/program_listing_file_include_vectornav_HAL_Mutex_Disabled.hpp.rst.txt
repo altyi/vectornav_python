@@ -1,0 +1,35 @@
+
+.. _program_listing_file_include_vectornav_HAL_Mutex_Disabled.hpp:
+
+Program Listing for File Mutex_Disabled.hpp
+===========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_Mutex_Disabled.hpp>` (``include\vectornav\HAL\Mutex_Disabled.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_MUTEX_DISABLED_HPP_
+   #define VN_MUTEX_DISABLED_HPP_
+   
+   #include "vectornav/HAL/Mutex_Base.hpp"
+   
+   namespace VN
+   {
+   class Mutex : public Mutex_Base
+   {
+   public:
+       Mutex() {}
+       void lock() override final {}
+       void unlock() override final {}
+   };
+   
+   class LockGuard : public LockGuard_Base
+   {
+   public:
+       LockGuard([[maybe_unused]] Mutex& mutex) {}
+   };
+   }  // namespace VN
+   
+   #endif  // VN_MUTEX_DISABLED_HPP_

@@ -1,0 +1,79 @@
+
+.. _program_listing_file_include_vectornav_HAL_File_Wasm.hpp:
+
+Program Listing for File File_Wasm.hpp
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_File_Wasm.hpp>` (``include\vectornav\HAL\File_Wasm.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_FILE_WASM_HPP_
+   #define VN_FILE_WASM_HPP_
+   
+   #include "vectornav/HAL/File_Base.hpp"
+   #include "vectornav/TemplateLibrary/String.hpp"
+   
+   namespace VN
+   {
+   namespace Filesystem
+   {
+   inline bool exists(const FilePath& filePath) noexcept { return true; };
+   }  // namespace Filesystem
+   
+   class InputFile : public InputFile_Base
+   {
+   public:
+       virtual ~InputFile();
+       virtual bool open(const Filesystem::FilePath& filePath) override final;
+       virtual void close() override final;
+       virtual void reset() override final;
+       virtual bool is_open() const override final;
+   
+       virtual bool read(char* buffer, const size_t count) override final;
+       virtual bool getLine(char* buffer, const size_t capacity) override final;
+   
+       void setBuffer(uint8_t* buffer, uint64_t bufferSize)
+       {
+           _buffer = buffer;
+           _bufferSize = bufferSize;
+           _bufferIndex = 0;
+       }
+   
+   private:
+       uint8_t* _buffer;
+       uint64_t _bufferSize;
+       uint64_t _bufferIndex;
+   };
+   
+   class OutputFile : public OutputFile_Base
+   {
+   public:
+       virtual ~OutputFile();
+       virtual bool open(const Filesystem::FilePath& filePath) override final;
+       virtual void close() override final;
+       virtual bool is_open() const override final;
+   
+       virtual bool write(const char* buffer, const size_t count) override final;
+       virtual bool write(const char* buffer) override final;
+       virtual bool writeLine(const char* buffer, const size_t count) override final;
+       virtual bool writeLine(const char* buffer) override final;
+   
+       void setBuffer(uint8_t* buffer, uint64_t bufferSize)
+       {
+           _buffer = buffer;
+           _bufferSize = bufferSize;
+           _bufferIndex = 0;
+       }
+   
+   private:
+       uint8_t* _buffer;
+       uint64_t _bufferSize;
+       uint64_t _bufferIndex;
+   };
+   
+   }  // namespace VN
+   
+   #endif  // VN_FILE_WASM_HPP_

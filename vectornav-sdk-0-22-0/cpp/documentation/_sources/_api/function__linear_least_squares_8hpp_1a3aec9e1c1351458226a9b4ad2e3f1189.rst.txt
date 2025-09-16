@@ -1,0 +1,14 @@
+.. _exhale_function__linear_least_squares_8hpp_1a3aec9e1c1351458226a9b4ad2e3f1189:
+
+Template Function VN::Math::solveLinearLeastSquares
+===================================================
+
+- Defined in :ref:`file_plugins_Math_vectornav_LinearLeastSquares.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Math::solveLinearLeastSquares(Matrix<m, n, T>, const Matrix<m, 1, T>&)
+   :project: VectorNav SDK

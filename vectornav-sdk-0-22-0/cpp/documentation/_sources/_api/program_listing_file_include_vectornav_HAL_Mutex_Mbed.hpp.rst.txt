@@ -1,0 +1,46 @@
+
+.. _program_listing_file_include_vectornav_HAL_Mutex_Mbed.hpp:
+
+Program Listing for File Mutex_Mbed.hpp
+=======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_Mutex_Mbed.hpp>` (``include\vectornav\HAL\Mutex_Mbed.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_MUTEX_MBED_HPP_
+   #define VN_MUTEX_MBED_HPP_
+   
+   #define MBED_NO_GLOBAL_USING_DIRECTIVE 0  // disable mbed namespace
+   #include "mbed.h"
+   #include "vectornav/HAL/Mutex_Base.hpp"
+   
+   namespace VN
+   {
+   class Mutex : public Mutex_Base
+   {
+   public:
+       Mutex() {}
+   
+       void lock() override final { _mutex.lock(); }
+       void unlock() override final { _mutex.unlock(); }
+   
+   private:
+       rtos::Mutex _mutex;
+   };
+   
+   class LockGuard : public LockGuard_Base
+   {
+   public:
+       LockGuard(Mutex& mutex) : _mutex(mutex) { _mutex.lock(); }
+   
+       ~LockGuard() { _mutex.unlock(); }
+   
+   private:
+       Mutex& _mutex;
+   };
+   }  // namespace VN
+   
+   #endif  // VN_MUTEX_MBED_HPP_

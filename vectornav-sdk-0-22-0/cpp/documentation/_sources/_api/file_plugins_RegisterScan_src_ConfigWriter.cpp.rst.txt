@@ -1,0 +1,60 @@
+
+.. _file_plugins_RegisterScan_src_ConfigWriter.cpp:
+
+File ConfigWriter.cpp
+=====================
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_RegisterScan_src>` (``plugins\RegisterScan\src``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``plugins\RegisterScan\src\ConfigWriter.cpp``)
+----------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_plugins_RegisterScan_src_ConfigWriter.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``iostream``
+
+- ``vectornav/ConfigWriter.hpp``
+
+- ``vectornav/Interface/Errors.hpp``
+
+- ``vectornav/Interface/Registers.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+- :ref:`namespace_VN__RegisterScan`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function__config_writer_8cpp_1aaa4ec0905c79a25aacf6db389b37bf86`
+

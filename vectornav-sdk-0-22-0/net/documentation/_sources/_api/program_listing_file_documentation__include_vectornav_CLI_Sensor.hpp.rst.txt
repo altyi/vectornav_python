@@ -1,0 +1,187 @@
+
+.. _program_listing_file_documentation__include_vectornav_CLI_Sensor.hpp:
+
+Program Listing for File CLI_Sensor.hpp
+=======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_documentation__include_vectornav_CLI_Sensor.hpp>` (``documentation\_include\vectornav\CLI_Sensor.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CLI_SENSOR_HPP_
+   #define VN_CLI_SENSOR_HPP_
+   
+   #include "vectornav/CLI_ByteBuffer.hpp"
+   #include "vectornav/CLI_CompositeData.hpp"
+   #include "vectornav/CLI_GenericCommand.hpp"
+   #include "vectornav/CLI_Registers.hpp"
+   #include "vectornav/CLI_SteadyClock.hpp"
+   
+   #pragma managed(push, off)
+   #include "vectornav/TemplateLibrary/ByteBuffer.hpp"
+   #include "vectornav/Interface/Sensor.hpp"
+   #pragma managed(pop)
+   
+   using namespace System;
+   
+   namespace VNSDK
+   {
+   
+   #if (PLUGIN_DATAEXPORT)
+      class Exporter;
+   #endif
+   #if (PLUGIN_CALIBRATION)
+   namespace Calibration
+   {
+      class HsiCalibration_Base;
+   }  // namespace Calibration
+   #endif
+   
+    class VnException : public Exception
+   {
+   public:
+       VnException(VN::Error error) : Exception(gcnew String(VN::errorCodeToString(error)))
+       {
+       }
+   };
+   
+    struct AsyncError
+   {
+     public:
+   
+       UInt16 Error;
+       String* Message;
+       System::DateTime Timestamp;
+   };
+   
+    class Sensor
+   {
+   private:
+       VN::Sensor * _sensor;
+       SteadyClock _clock{};
+   
+   public:
+       using BaudRate = Registers::System::BaudRate::BaudRates;
+       Sensor()
+       {
+           _sensor = new VN::Sensor();
+       }
+       
+       ~Sensor()
+       {
+           delete _sensor;
+       }
+   
+   
+       VN::Sensor &GetNativeInstance()
+       {
+           return *_sensor;
+       };
+   
+       // ------------------------------------------ //@{
+       // ------------------------------------------
+   
+       void Connect(String * portName, UInt32 baudRate);
+   
+       void AutoConnect(String * portName);
+   
+       bool VerifySensorConnectivity();
+   
+       String * ConnectedPortName();
+   
+       uint32_t ConnectedBaudRate();
+   
+       void ChangeBaudRate(UInt32 baudRate);
+   
+       void ChangeHostBaudRate(UInt32 baudRate);
+   
+       void Disconnect();
+   
+       // ------------------------------------------ //@{
+       // ------------------------------------------
+   
+       bool HasMeasurement();
+   
+       Nullable<CompositeData> GetNextMeasurement();
+   
+       Nullable<CompositeData> GetMostRecentMeasurement();
+   
+       enum class SendCommandBlockMode
+       {
+           None = (int)VN::Sensor::SendCommandBlockMode::None,            
+           Block = (int)VN::Sensor::SendCommandBlockMode::Block,           
+           BlockWithRetry = (int)VN::Sensor::SendCommandBlockMode::BlockWithRetry,  
+       };
+   
+       // ------------------------------------------ //@{
+       // ------------------------------------------
+   
+       void ReadRegister(Registers::Register * reg);
+   
+       void WriteRegister(Registers::Register * reg);
+   
+       void WriteSettings();
+   
+       void Reset();
+   
+       void RestoreFactorySettings();
+   
+       void KnownMagneticDisturbance(uint8_t state);
+   
+       void KnownAccelerationDisturbance(uint8_t state);
+   
+       void SetInitialHeading(float heading);
+       void SetInitialHeading(Ypr ypr);
+       void SetInitialHeading(Quaternion quat);
+   
+       void AsyncOutputEnable(uint8_t state);
+   
+       void SetFilterBias();
+   
+       // SetBootloader(const SetBootLoader::Processor processorId);  // Unnecessary for CLI.
+   
+      
+       void SendCommand(GenericCommand& commandToSend, Sensor::SendCommandBlockMode waitMode);
+       // Error Sensor::sendCommand(Command* commandToSend, SendCommandBlockMode waitMode, const Microseconds waitLengthMs, const Microseconds timeoutThreshold) noexcept
+   
+       void SerialSend(String * msgToSend);
+   
+       // ------------------------------------------
+       // Error Handling
+       // ------------------------------------------
+   
+       Nullable<AsyncError> Sensor::GetAsynchronousError();
+   
+       System::DateTime Sensor::Now();
+   
+       // -----------------------------------------
+       // Additional logging
+       // ------------------------------------------
+   
+       void RegisterReceivedByteBuffer(ByteBuffer* buffer);
+       void DeregisterReceivedByteBuffer();
+       void RegisterSkippedByteBuffer(ByteBuffer* buffer);
+       void DeregisterSkippedByteBuffer();
+   
+   #if (PLUGIN_DATAEXPORT)
+       void RegisterDataExporter(Exporter* exporter);
+       void DeregisterDataExporter(Exporter* exporter);
+   #endif
+   
+   #if (PLUGIN_CALIBRATION)
+       void RegisterHsiCalibration(Calibration::HsiCalibration_Base* hsi);
+       void DeregisterHsiCalibration(Calibration::HsiCalibration_Base* hsi);
+   #endif
+       // ------------------------------------------
+       // Unthreaded Packet Processing
+       // ------------------------------------------
+   
+   
+   }; //  class Sensor
+   } // namespace VNSDK
+   
+   #include "vectornav/CLI_Plugins.hpp"
+   
+   #endif  // VN_CLI_SENSOR_HPP_

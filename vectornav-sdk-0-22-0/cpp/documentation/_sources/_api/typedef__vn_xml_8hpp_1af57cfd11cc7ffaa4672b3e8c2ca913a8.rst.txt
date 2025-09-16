@@ -1,0 +1,14 @@
+.. _exhale_typedef__vn_xml_8hpp_1af57cfd11cc7ffaa4672b3e8c2ca913a8:
+
+Typedef VN::VnXml::ImuProcessorCheck
+====================================
+
+- Defined in :ref:`file_plugins_FirmwareUpdate_include_vectornav_VnXml.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::VnXml::ImuProcessorCheck
+   :project: VectorNav SDK

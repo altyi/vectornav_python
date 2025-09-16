@@ -1,0 +1,14 @@
+.. _exhale_typedef__vn_xml_8hpp_1af4d00933878f969cc425ab0d2e15e6fa:
+
+Typedef VN::VnXml::NavProcessorCheck
+====================================
+
+- Defined in :ref:`file_plugins_FirmwareUpdate_include_vectornav_VnXml.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: VN::VnXml::NavProcessorCheck
+   :project: VectorNav SDK

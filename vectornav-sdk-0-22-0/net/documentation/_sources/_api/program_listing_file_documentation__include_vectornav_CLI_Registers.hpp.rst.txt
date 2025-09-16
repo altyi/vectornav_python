@@ -1,0 +1,3850 @@
+
+.. _program_listing_file_documentation__include_vectornav_CLI_Registers.hpp:
+
+Program Listing for File CLI_Registers.hpp
+==========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_documentation__include_vectornav_CLI_Registers.hpp>` (``documentation\_include\vectornav\CLI_Registers.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_CLI_REGISTERS_HPP_
+   #define VN_CLI_REGISTERS_HPP_
+   
+   #define NOMINMAX 1
+   #include "Windows.h"
+   #include <string>
+   #include <conio.h>
+   #include <msclr/marshal.h>
+   
+   #include "CLI_GenericCommand.hpp"
+   
+   #pragma managed(push, off)
+   #include "vectornav/Interface/Registers.hpp"
+   #pragma managed(pop)
+   
+   using namespace System;
+   using namespace msclr::interop;
+   
+   namespace VNSDK
+   {
+   namespace Registers
+   {
+    class Register
+   {
+       protected:
+       VN::Register* _reg;
+       
+       public:
+       Register(VN::Register* reg) : _reg(reg) {};
+       ~Register() { delete _reg; };
+       VN::Register* GetReference() {return _reg;};
+       
+       VNSDK::GenericCommand* ToReadCommand()
+       {
+           VN::GenericCommand* cmd_c = new VN::GenericCommand(_reg->toReadCommand());
+           VNSDK::GenericCommand* cmd = gcnew VNSDK::GenericCommand(cmd_c);
+           return cmd;
+       };
+       
+       VNSDK::GenericCommand* ToWriteCommand()
+       {
+           VN::ConfigurationRegister* configReg = dynamic_cast<VN::ConfigurationRegister*>(_reg);
+           if (configReg != nullptr)
+           {
+               VN::GenericCommand* cmd_c = new VN::GenericCommand(configReg->toWriteCommand());
+               VNSDK::GenericCommand* cmd = gcnew GenericCommand(cmd_c);
+               return cmd;
+           }
+           else
+           {
+               throw gcnew InvalidCastException("Cast to ConfigurationRegister failed.");
+           }
+       };
+   };
+   
+   namespace Attitude
+   {
+    class YawPitchRoll : public Register
+   {
+       public:
+       YawPitchRoll() : Register(new VN::Registers::Attitude::YawPitchRoll())
+       {
+       };
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+       
+   };
+   
+    class Quaternion : public Register
+   {
+       public:
+       Quaternion() : Register(new VN::Registers::Attitude::Quaternion())
+       {
+       };
+       
+        float quatX
+       ;;
+       
+        float quatY
+       ;;
+       
+        float quatZ
+       ;;
+       
+        float quatS
+       ;;
+       
+       
+   };
+   
+    class QuatMagAccelRate : public Register
+   {
+       public:
+       QuatMagAccelRate() : Register(new VN::Registers::Attitude::QuatMagAccelRate())
+       {
+       };
+       
+        float quatX
+       ;;
+       
+        float quatY
+       ;;
+       
+        float quatZ
+       ;;
+       
+        float quatS
+       ;;
+       
+        float magX
+       ;;
+       
+        float magY
+       ;;
+       
+        float magZ
+       ;;
+       
+        float accelX
+       ;;
+       
+        float accelY
+       ;;
+       
+        float accelZ
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class MagGravRefVec : public Register
+   {
+       public:
+       MagGravRefVec() : Register(new VN::Registers::Attitude::MagGravRefVec())
+       {
+       };
+       
+        float magRefN
+       ;;
+       
+        float magRefE
+       ;;
+       
+        float magRefD
+       ;;
+       
+        float gravRefN
+       ;;
+       
+        float gravRefE
+       ;;
+       
+        float gravRefD
+       ;;
+       
+       
+   };
+   
+    class YprMagAccelAngularRates : public Register
+   {
+       public:
+       YprMagAccelAngularRates() : Register(new VN::Registers::Attitude::YprMagAccelAngularRates())
+       {
+       };
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        float magX
+       ;;
+       
+        float magY
+       ;;
+       
+        float magZ
+       ;;
+       
+        float accelX
+       ;;
+       
+        float accelY
+       ;;
+       
+        float accelZ
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class VpeBasicControl : public Register
+   {
+       public:
+       VpeBasicControl() : Register(new VN::Registers::Attitude::VpeBasicControl())
+       {
+       };
+       
+        uint8_t resv
+       ;;
+       
+       enum class HeadingMode : uint8_t
+       {
+           Absolute = 0,
+           Relative = 1,
+           Indoor = 2,
+       };
+        HeadingMode headingMode
+       ;;
+       
+       enum class FilteringMode : uint8_t
+       {
+           Unfiltered = 0,
+           AdaptivelyFiltered = 1,
+       };
+        FilteringMode filteringMode
+       ;;
+       
+       enum class TuningMode : uint8_t
+       {
+           Static = 0,
+           Adaptive = 1,
+       };
+        TuningMode tuningMode
+       ;;
+       
+       
+   };
+   
+    class VpeMagBasicTuning : public Register
+   {
+       public:
+       VpeMagBasicTuning() : Register(new VN::Registers::Attitude::VpeMagBasicTuning())
+       {
+       };
+       
+        float baseTuningX
+       ;;
+       
+        float baseTuningY
+       ;;
+       
+        float baseTuningZ
+       ;;
+       
+        float adaptiveTuningX
+       ;;
+       
+        float adaptiveTuningY
+       ;;
+       
+        float adaptiveTuningZ
+       ;;
+       
+        float adaptiveFilteringX
+       ;;
+       
+        float adaptiveFilteringY
+       ;;
+       
+        float adaptiveFilteringZ
+       ;;
+       
+       
+   };
+   
+    class VpeAccelBasicTuning : public Register
+   {
+       public:
+       VpeAccelBasicTuning() : Register(new VN::Registers::Attitude::VpeAccelBasicTuning())
+       {
+       };
+       
+        float baseTuningX
+       ;;
+       
+        float baseTuningY
+       ;;
+       
+        float baseTuningZ
+       ;;
+       
+        float adaptiveTuningX
+       ;;
+       
+        float adaptiveTuningY
+       ;;
+       
+        float adaptiveTuningZ
+       ;;
+       
+        float adaptiveFilteringX
+       ;;
+       
+        float adaptiveFilteringY
+       ;;
+       
+        float adaptiveFilteringZ
+       ;;
+       
+       
+   };
+   
+    class YprLinearBodyAccelAngularRates : public Register
+   {
+       public:
+       YprLinearBodyAccelAngularRates() : Register(new VN::Registers::Attitude::YprLinearBodyAccelAngularRates())
+       {
+       };
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        float linAccelX
+       ;;
+       
+        float linAccelY
+       ;;
+       
+        float linAccelZ
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class YprLinearInertialAccelAngularRates : public Register
+   {
+       public:
+       YprLinearInertialAccelAngularRates() : Register(new VN::Registers::Attitude::YprLinearInertialAccelAngularRates())
+       {
+       };
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        float linAccelN
+       ;;
+       
+        float linAccelE
+       ;;
+       
+        float linAccelD
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+   } // namespace Attitude
+   
+   namespace GNSS
+   {
+    class GnssBasicConfig : public Register
+   {
+       public:
+       GnssBasicConfig() : Register(new VN::Registers::GNSS::GnssBasicConfig())
+       {
+       };
+       
+       enum class ReceiverEnable : uint8_t
+       {
+           Internal = 0,
+           VnWrite = 1,
+           VnAdor = 2,
+           GnssA = 100,
+           VnWriteAndGnssA = 101,
+           VnAdorAndGnssA = 102,
+           VnWriteAndGnssAB = 201,
+           VnAdorAndGnssAB = 202,
+       };
+        ReceiverEnable receiverEnable
+       ;;
+       
+       enum class PpsSource : uint8_t
+       {
+           PpsPinRising = 0,
+           PpsPinFalling = 1,
+           SyncInRising = 2,
+           SyncInFalling = 3,
+           None = 6,
+       };
+        PpsSource ppsSource
+       ;;
+       
+       enum class Rate : uint8_t
+       {
+           Rate1Hz = 1,
+           Rate5Hz = 5,
+       };
+        Rate rate
+       ;;
+       
+        uint8_t resv4
+       ;;
+       
+       enum class AntPower : uint8_t
+       {
+           Off = 0,
+           Internal = 1,
+           External = 2,
+       };
+        AntPower antPower
+       ;;
+       
+       
+   };
+   
+    class GnssAOffset : public Register
+   {
+       public:
+       GnssAOffset() : Register(new VN::Registers::GNSS::GnssAOffset())
+       {
+       };
+       
+        float positionX
+       ;;
+       
+        float positionY
+       ;;
+       
+        float positionZ
+       ;;
+       
+       
+   };
+   
+    class GnssSolLla : public Register
+   {
+       public:
+       GnssSolLla() : Register(new VN::Registers::GNSS::GnssSolLla())
+       {
+       };
+       
+        double gps1Tow
+       ;;
+       
+        uint16_t gps1Week
+       ;;
+       
+       enum class Gnss1Fix : uint8_t
+       {
+           NoFix = 0,
+           TimeFix = 1,
+           Fix2D = 2,
+           Fix3D = 3,
+           SBAS = 4,
+           RtkFloat = 7,
+           RtkFix = 8,
+       };
+        Gnss1Fix gnss1Fix
+       ;;
+       
+        uint8_t gnss1NumSats
+       ;;
+       
+        double lat
+       ;;
+       
+        double lon
+       ;;
+       
+        double alt
+       ;;
+       
+        float velN
+       ;;
+       
+        float velE
+       ;;
+       
+        float velD
+       ;;
+       
+        float posUncertaintyN
+       ;;
+       
+        float posUncertaintyE
+       ;;
+       
+        float posUncertaintyD
+       ;;
+       
+        float gnss1VelUncertainty
+       ;;
+       
+        float gnss1TimeUncertainty
+       ;;
+       
+       
+   };
+   
+    class GnssSolEcef : public Register
+   {
+       public:
+       GnssSolEcef() : Register(new VN::Registers::GNSS::GnssSolEcef())
+       {
+       };
+       
+        double gps1Tow
+       ;;
+       
+        uint16_t gps1Week
+       ;;
+       
+       enum class Gnss1Fix : uint8_t
+       {
+           NoFix = 0,
+           TimeFix = 1,
+           Fix2D = 2,
+           Fix3D = 3,
+           SBAS = 4,
+           RtkFloat = 7,
+           RtkFix = 8,
+       };
+        Gnss1Fix gnss1Fix
+       ;;
+       
+        uint8_t gnss1NumSats
+       ;;
+       
+        double posX
+       ;;
+       
+        double posY
+       ;;
+       
+        double posZ
+       ;;
+       
+        float velX
+       ;;
+       
+        float velY
+       ;;
+       
+        float velZ
+       ;;
+       
+        float posUncertaintyX
+       ;;
+       
+        float posUncertaintyY
+       ;;
+       
+        float posUncertaintyZ
+       ;;
+       
+        float gnss1VelUncertainty
+       ;;
+       
+        float gnss1TimeUncertainty
+       ;;
+       
+       
+   };
+   
+    class GnssSystemConfig : public Register
+   {
+       public:
+       GnssSystemConfig() : Register(new VN::Registers::GNSS::GnssSystemConfig())
+       {
+           systems = gcnew Systems(_reg);
+           sbasMode = gcnew SbasMode(_reg);
+           sbasSelect1 = gcnew SbasSelect1(_reg);
+           sbasSelect2 = gcnew SbasSelect2(_reg);
+           sbasSelect3 = gcnew SbasSelect3(_reg);
+       };
+       
+      class Systems
+       {
+           VN::Register* _reg;
+           
+           public:
+           Systems(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint16_t _value                
+           ;;
+           
+           // GPS
+            bool gps
+           ;;
+           
+           // SBAS
+            bool sbas
+           ;;
+           
+           // GLONASS
+            bool glonass
+           ;;
+           
+           // Beidou
+            bool beidou
+           ;;
+           
+           // Galileo
+            bool galileo
+           ;;
+           
+           // IMES
+            bool imes
+           ;;
+           
+           // QZSS_L1_CA
+            bool qzssL1Ca
+           ;;
+           
+           // QZSS_L1_SAIF
+            bool qzssL1Saif
+           ;;
+           
+       };
+       
+       Systems* systems;
+       
+        uint8_t minCno
+       ;;
+       
+        uint8_t minElev
+       ;;
+       
+        uint8_t maxSats
+       ;;
+       
+      class SbasMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           SbasMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // Ranging
+            bool ranging
+           ;;
+           
+           // DiffCorr
+            bool diffCorr
+           ;;
+           
+           // Integrity
+            bool integrity
+           ;;
+           
+           // TestMode
+            bool testMode
+           ;;
+           
+       };
+       
+       SbasMode* sbasMode;
+       
+      class SbasSelect1
+       {
+           VN::Register* _reg;
+           
+           public:
+           SbasSelect1(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint16_t _value                
+           ;;
+           
+           // Sbas120
+            bool sbas120
+           ;;
+           
+           // Sbas121
+            bool sbas121
+           ;;
+           
+           // Sbas122
+            bool sbas122
+           ;;
+           
+           // Sbas123
+            bool sbas123
+           ;;
+           
+           // Sbas124
+            bool sbas124
+           ;;
+           
+           // Sbas125
+            bool sbas125
+           ;;
+           
+           // Sbas126
+            bool sbas126
+           ;;
+           
+           // Sbas127
+            bool sbas127
+           ;;
+           
+           // Sbas128
+            bool sbas128
+           ;;
+           
+           // Sbas129
+            bool sbas129
+           ;;
+           
+           // Sbas130
+            bool sbas130
+           ;;
+           
+           // Sbas131
+            bool sbas131
+           ;;
+           
+           // Sbas132
+            bool sbas132
+           ;;
+           
+           // Sbas133
+            bool sbas133
+           ;;
+           
+           // Sbas134
+            bool sbas134
+           ;;
+           
+           // Sbas135
+            bool sbas135
+           ;;
+           
+       };
+       
+       SbasSelect1* sbasSelect1;
+       
+      class SbasSelect2
+       {
+           VN::Register* _reg;
+           
+           public:
+           SbasSelect2(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint16_t _value                
+           ;;
+           
+           // Sbas136
+            bool sbas136
+           ;;
+           
+           // Sbas137
+            bool sbas137
+           ;;
+           
+           // Sbas138
+            bool sbas138
+           ;;
+           
+           // Sbas139
+            bool sbas139
+           ;;
+           
+           // Sbas140
+            bool sbas140
+           ;;
+           
+           // Sbas141
+            bool sbas141
+           ;;
+           
+           // Sbas142
+            bool sbas142
+           ;;
+           
+           // Sbas143
+            bool sbas143
+           ;;
+           
+           // Sbas144
+            bool sbas144
+           ;;
+           
+           // Sbas145
+            bool sbas145
+           ;;
+           
+           // Sbas146
+            bool sbas146
+           ;;
+           
+           // Sbas147
+            bool sbas147
+           ;;
+           
+           // Sbas148
+            bool sbas148
+           ;;
+           
+           // Sbas149
+            bool sbas149
+           ;;
+           
+           // Sbas150
+            bool sbas150
+           ;;
+           
+           // Sbas151
+            bool sbas151
+           ;;
+           
+       };
+       
+       SbasSelect2* sbasSelect2;
+       
+      class SbasSelect3
+       {
+           VN::Register* _reg;
+           
+           public:
+           SbasSelect3(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint16_t _value                
+           ;;
+           
+           // Sbas152
+            bool sbas152
+           ;;
+           
+           // Sbas153
+            bool sbas153
+           ;;
+           
+           // Sbas154
+            bool sbas154
+           ;;
+           
+           // Sbas155
+            bool sbas155
+           ;;
+           
+           // Sbas156
+            bool sbas156
+           ;;
+           
+           // Sbas157
+            bool sbas157
+           ;;
+           
+           // Sbas158
+            bool sbas158
+           ;;
+           
+       };
+       
+       SbasSelect3* sbasSelect3;
+       
+       enum class ReceiverSelect : uint8_t
+       {
+           GnssAB = 0,
+           GnssA = 1,
+           GnssB = 2,
+       };
+        ReceiverSelect receiverSelect
+       ;;
+       
+       
+   };
+   
+    class GnssSyncConfig : public Register
+   {
+       public:
+       GnssSyncConfig() : Register(new VN::Registers::GNSS::GnssSyncConfig())
+       {
+       };
+       
+       enum class GnssSyncEnable : uint8_t
+       {
+           Off = 0,
+           AlwaysOn = 1,
+           OnWhenLocked = 2,
+       };
+        GnssSyncEnable gnssSyncEnable
+       ;;
+       
+       enum class Polarity : uint8_t
+       {
+           FallingEdge = 0,
+           RisingEdge = 1,
+       };
+        Polarity polarity
+       ;;
+       
+       enum class SpecType : uint8_t
+       {
+           PeriodPulseWidth = 0,
+           FreqDutyCycle = 1,
+       };
+        SpecType specType
+       ;;
+       
+        uint8_t resv
+       ;;
+       
+        uint32_t period
+       ;;
+       
+        uint32_t pulseWidth
+       ;;
+       
+        int32_t offset
+       ;;
+       
+       
+   };
+   
+    class Gnss2SolLla : public Register
+   {
+       public:
+       Gnss2SolLla() : Register(new VN::Registers::GNSS::Gnss2SolLla())
+       {
+       };
+       
+        double gps2Tow
+       ;;
+       
+        uint16_t gps2Week
+       ;;
+       
+       enum class Gnss2Fix : uint8_t
+       {
+           NoFix = 0,
+           TimeFix = 1,
+           Fix2D = 2,
+           Fix3D = 3,
+           SBAS = 4,
+           RtkFloat = 7,
+           RtkFix = 8,
+       };
+        Gnss2Fix gnss2Fix
+       ;;
+       
+        uint8_t gnss2NumSats
+       ;;
+       
+        double lat
+       ;;
+       
+        double lon
+       ;;
+       
+        double alt
+       ;;
+       
+        float velN
+       ;;
+       
+        float velE
+       ;;
+       
+        float velD
+       ;;
+       
+        float posUncertaintyN
+       ;;
+       
+        float posUncertaintyE
+       ;;
+       
+        float posUncertaintyD
+       ;;
+       
+        float gnss2VelUncertainty
+       ;;
+       
+        float gnss2TimeUncertainty
+       ;;
+       
+       
+   };
+   
+    class Gnss2SolEcef : public Register
+   {
+       public:
+       Gnss2SolEcef() : Register(new VN::Registers::GNSS::Gnss2SolEcef())
+       {
+       };
+       
+        double gps2Tow
+       ;;
+       
+        uint16_t gps2Week
+       ;;
+       
+       enum class Gnss2Fix : uint8_t
+       {
+           NoFix = 0,
+           TimeFix = 1,
+           Fix2D = 2,
+           Fix3D = 3,
+           SBAS = 4,
+           RtkFloat = 7,
+           RtkFix = 8,
+       };
+        Gnss2Fix gnss2Fix
+       ;;
+       
+        uint8_t gnss2NumSats
+       ;;
+       
+        double posX
+       ;;
+       
+        double posY
+       ;;
+       
+        double posZ
+       ;;
+       
+        float velX
+       ;;
+       
+        float velY
+       ;;
+       
+        float velZ
+       ;;
+       
+        float posUncertaintyX
+       ;;
+       
+        float posUncertaintyY
+       ;;
+       
+        float posUncertaintyZ
+       ;;
+       
+        float gnss2VelUncertainty
+       ;;
+       
+        float gnss2TimeUncertainty
+       ;;
+       
+       
+   };
+   
+    class ExtGnssOffset : public Register
+   {
+       public:
+       ExtGnssOffset() : Register(new VN::Registers::GNSS::ExtGnssOffset())
+       {
+       };
+       
+        float positionX
+       ;;
+       
+        float positionY
+       ;;
+       
+        float positionZ
+       ;;
+       
+       
+   };
+   
+   } // namespace GNSS
+   
+   namespace GNSSCompass
+   {
+    class GnssCompassSignalHealthStatus : public Register
+   {
+       public:
+       GnssCompassSignalHealthStatus() : Register(new VN::Registers::GNSSCompass::GnssCompassSignalHealthStatus())
+       {
+       };
+       
+        float numSatsPvtA
+       ;;
+       
+        float numSatsRtkA
+       ;;
+       
+        float highestCn0A
+       ;;
+       
+        float numSatsPvtB
+       ;;
+       
+        float numSatsRtkB
+       ;;
+       
+        float highestCn0B
+       ;;
+       
+        float numComSatsPvt
+       ;;
+       
+        float numComSatsRtk
+       ;;
+       
+       
+   };
+   
+    class GnssCompassBaseline : public Register
+   {
+       public:
+       GnssCompassBaseline() : Register(new VN::Registers::GNSSCompass::GnssCompassBaseline())
+       {
+       };
+       
+        float positionX
+       ;;
+       
+        float positionY
+       ;;
+       
+        float positionZ
+       ;;
+       
+        float uncertaintyX
+       ;;
+       
+        float uncertaintyY
+       ;;
+       
+        float uncertaintyZ
+       ;;
+       
+       
+   };
+   
+    class GnssCompassEstBaseline : public Register
+   {
+       public:
+       GnssCompassEstBaseline() : Register(new VN::Registers::GNSSCompass::GnssCompassEstBaseline())
+       {
+       };
+       
+        uint8_t estBaselineComplete
+       ;;
+       
+        uint8_t resv
+       ;;
+       
+        uint16_t numMeas
+       ;;
+       
+        float positionX
+       ;;
+       
+        float positionY
+       ;;
+       
+        float positionZ
+       ;;
+       
+        float uncertaintyX
+       ;;
+       
+        float uncertaintyY
+       ;;
+       
+        float uncertaintyZ
+       ;;
+       
+       
+   };
+   
+    class GnssCompassStartupStatus : public Register
+   {
+       public:
+       GnssCompassStartupStatus() : Register(new VN::Registers::GNSSCompass::GnssCompassStartupStatus())
+       {
+       };
+       
+        uint8_t percentComplete
+       ;;
+       
+        float currentHeading
+       ;;
+       
+       
+   };
+   
+   } // namespace GNSSCompass
+   
+   namespace HardSoftIronEstimator
+   {
+    class RealTimeHsiControl : public Register
+   {
+       public:
+       RealTimeHsiControl() : Register(new VN::Registers::HardSoftIronEstimator::RealTimeHsiControl())
+       {
+       };
+       
+       enum class Mode : uint8_t
+       {
+           Off = 0,
+           Run = 1,
+           Reset = 2,
+       };
+        Mode mode
+       ;;
+       
+       enum class ApplyCompensation : uint8_t
+       {
+           Disable = 1,
+           Enable = 3,
+       };
+        ApplyCompensation applyCompensation
+       ;;
+       
+        uint8_t convergeRate
+       ;;
+       
+       
+   };
+   
+    class EstMagCal : public Register
+   {
+       public:
+       EstMagCal() : Register(new VN::Registers::HardSoftIronEstimator::EstMagCal())
+       {
+       };
+       
+        float magGain00
+       ;;
+       
+        float magGain01
+       ;;
+       
+        float magGain02
+       ;;
+       
+        float magGain10
+       ;;
+       
+        float magGain11
+       ;;
+       
+        float magGain12
+       ;;
+       
+        float magGain20
+       ;;
+       
+        float magGain21
+       ;;
+       
+        float magGain22
+       ;;
+       
+        float magBiasX
+       ;;
+       
+        float magBiasY
+       ;;
+       
+        float magBiasZ
+       ;;
+       
+       
+   };
+   
+   } // namespace HardSoftIronEstimator
+   
+   namespace Heave
+   {
+    class HeaveOutputs : public Register
+   {
+       public:
+       HeaveOutputs() : Register(new VN::Registers::Heave::HeaveOutputs())
+       {
+       };
+       
+        float heave
+       ;;
+       
+        float heaveRate
+       ;;
+       
+        float delayedHeave
+       ;;
+       
+       
+   };
+   
+    class HeaveBasicConfig : public Register
+   {
+       public:
+       HeaveBasicConfig() : Register(new VN::Registers::Heave::HeaveBasicConfig())
+       {
+       };
+       
+        float initialWavePeriod
+       ;;
+       
+        float initialWaveAmplitude
+       ;;
+       
+        float maxWavePeriod
+       ;;
+       
+        float minWaveAmplitude
+       ;;
+       
+        float delayedHeaveCutoffFreq
+       ;;
+       
+        float heaveCutoffFreq
+       ;;
+       
+        float heaveRateCutoffFreq
+       ;;
+       
+       
+   };
+   
+   } // namespace Heave
+   
+   namespace IMU
+   {
+    class Mag : public Register
+   {
+       public:
+       Mag() : Register(new VN::Registers::IMU::Mag())
+       {
+       };
+       
+        float magX
+       ;;
+       
+        float magY
+       ;;
+       
+        float magZ
+       ;;
+       
+       
+   };
+   
+    class Accel : public Register
+   {
+       public:
+       Accel() : Register(new VN::Registers::IMU::Accel())
+       {
+       };
+       
+        float accelX
+       ;;
+       
+        float accelY
+       ;;
+       
+        float accelZ
+       ;;
+       
+       
+   };
+   
+    class Gyro : public Register
+   {
+       public:
+       Gyro() : Register(new VN::Registers::IMU::Gyro())
+       {
+       };
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class MagAccelGyro : public Register
+   {
+       public:
+       MagAccelGyro() : Register(new VN::Registers::IMU::MagAccelGyro())
+       {
+       };
+       
+        float magX
+       ;;
+       
+        float magY
+       ;;
+       
+        float magZ
+       ;;
+       
+        float accelX
+       ;;
+       
+        float accelY
+       ;;
+       
+        float accelZ
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class MagCal : public Register
+   {
+       public:
+       MagCal() : Register(new VN::Registers::IMU::MagCal())
+       {
+       };
+       
+        float magGain00
+       ;;
+       
+        float magGain01
+       ;;
+       
+        float magGain02
+       ;;
+       
+        float magGain10
+       ;;
+       
+        float magGain11
+       ;;
+       
+        float magGain12
+       ;;
+       
+        float magGain20
+       ;;
+       
+        float magGain21
+       ;;
+       
+        float magGain22
+       ;;
+       
+        float magBiasX
+       ;;
+       
+        float magBiasY
+       ;;
+       
+        float magBiasZ
+       ;;
+       
+       
+   };
+   
+    class AccelCal : public Register
+   {
+       public:
+       AccelCal() : Register(new VN::Registers::IMU::AccelCal())
+       {
+       };
+       
+        float accelGain00
+       ;;
+       
+        float accelGain01
+       ;;
+       
+        float accelGain02
+       ;;
+       
+        float accelGain10
+       ;;
+       
+        float accelGain11
+       ;;
+       
+        float accelGain12
+       ;;
+       
+        float accelGain20
+       ;;
+       
+        float accelGain21
+       ;;
+       
+        float accelGain22
+       ;;
+       
+        float accelBiasX
+       ;;
+       
+        float accelBiasY
+       ;;
+       
+        float accelBiasZ
+       ;;
+       
+       
+   };
+   
+    class RefFrameRot : public Register
+   {
+       public:
+       RefFrameRot() : Register(new VN::Registers::IMU::RefFrameRot())
+       {
+       };
+       
+        float rfr00
+       ;;
+       
+        float rfr01
+       ;;
+       
+        float rfr02
+       ;;
+       
+        float rfr10
+       ;;
+       
+        float rfr11
+       ;;
+       
+        float rfr12
+       ;;
+       
+        float rfr20
+       ;;
+       
+        float rfr21
+       ;;
+       
+        float rfr22
+       ;;
+       
+       
+   };
+   
+    class ImuMeas : public Register
+   {
+       public:
+       ImuMeas() : Register(new VN::Registers::IMU::ImuMeas())
+       {
+       };
+       
+        float uncompMagX
+       ;;
+       
+        float uncompMagY
+       ;;
+       
+        float uncompMagZ
+       ;;
+       
+        float uncompAccX
+       ;;
+       
+        float uncompAccY
+       ;;
+       
+        float uncompAccZ
+       ;;
+       
+        float uncompGyroX
+       ;;
+       
+        float uncompGyroY
+       ;;
+       
+        float uncompGyroZ
+       ;;
+       
+        float temperature
+       ;;
+       
+        float pressure
+       ;;
+       
+       
+   };
+   
+    class DeltaThetaVelocity : public Register
+   {
+       public:
+       DeltaThetaVelocity() : Register(new VN::Registers::IMU::DeltaThetaVelocity())
+       {
+       };
+       
+        float deltaTime
+       ;;
+       
+        float deltaThetaX
+       ;;
+       
+        float deltaThetaY
+       ;;
+       
+        float deltaThetaZ
+       ;;
+       
+        float deltaVelX
+       ;;
+       
+        float deltaVelY
+       ;;
+       
+        float deltaVelZ
+       ;;
+       
+       
+   };
+   
+    class DeltaThetaVelConfig : public Register
+   {
+       public:
+       DeltaThetaVelConfig() : Register(new VN::Registers::IMU::DeltaThetaVelConfig())
+       {
+       };
+       
+       enum class IntegrationFrame : uint8_t
+       {
+           Body = 0,
+           NED = 1,
+       };
+        IntegrationFrame integrationFrame
+       ;;
+       
+       enum class GyroCompensation : uint8_t
+       {
+           None = 0,
+           Bias = 1,
+       };
+        GyroCompensation gyroCompensation
+       ;;
+       
+       enum class AccelCompensation : uint8_t
+       {
+           None = 0,
+           Gravity = 1,
+           Bias = 2,
+           BiasAndGravity = 3,
+       };
+        AccelCompensation accelCompensation
+       ;;
+       
+       enum class EarthRateCompensation : uint8_t
+       {
+           None = 0,
+           GyroRate = 1,
+           CoriolisAccel = 2,
+           RateAndCoriolis = 3,
+       };
+        EarthRateCompensation earthRateCompensation
+       ;;
+       
+        uint16_t resv
+       ;;
+       
+       
+   };
+   
+    class GyroCal : public Register
+   {
+       public:
+       GyroCal() : Register(new VN::Registers::IMU::GyroCal())
+       {
+       };
+       
+        float gyroGain00
+       ;;
+       
+        float gyroGain01
+       ;;
+       
+        float gyroGain02
+       ;;
+       
+        float gyroGain10
+       ;;
+       
+        float gyroGain11
+       ;;
+       
+        float gyroGain12
+       ;;
+       
+        float gyroGain20
+       ;;
+       
+        float gyroGain21
+       ;;
+       
+        float gyroGain22
+       ;;
+       
+        float gyroBiasX
+       ;;
+       
+        float gyroBiasY
+       ;;
+       
+        float gyroBiasZ
+       ;;
+       
+       
+   };
+   
+    class ImuFilterControl : public Register
+   {
+       public:
+       ImuFilterControl() : Register(new VN::Registers::IMU::ImuFilterControl())
+       {
+           magFilterMode = gcnew MagFilterMode(_reg);
+           accelFilterMode = gcnew AccelFilterMode(_reg);
+           gyroFilterMode = gcnew GyroFilterMode(_reg);
+           tempFilterMode = gcnew TempFilterMode(_reg);
+           presFilterMode = gcnew PresFilterMode(_reg);
+       };
+       
+        uint16_t magWindowSize
+       ;;
+       
+        uint16_t accelWindowSize
+       ;;
+       
+        uint16_t gyroWindowSize
+       ;;
+       
+        uint16_t tempWindowSize
+       ;;
+       
+        uint16_t presWindowSize
+       ;;
+       
+      class MagFilterMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           MagFilterMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // Uncomp
+            bool uncomp
+           ;;
+           
+           // Comp
+            bool comp
+           ;;
+           
+       };
+       
+       MagFilterMode* magFilterMode;
+       
+      class AccelFilterMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           AccelFilterMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // Uncomp
+            bool uncomp
+           ;;
+           
+           // Comp
+            bool comp
+           ;;
+           
+       };
+       
+       AccelFilterMode* accelFilterMode;
+       
+      class GyroFilterMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           GyroFilterMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // Uncomp
+            bool uncomp
+           ;;
+           
+           // Comp
+            bool comp
+           ;;
+           
+       };
+       
+       GyroFilterMode* gyroFilterMode;
+       
+      class TempFilterMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           TempFilterMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // Uncomp
+            bool uncomp
+           ;;
+           
+           // Comp
+            bool comp
+           ;;
+           
+       };
+       
+       TempFilterMode* tempFilterMode;
+       
+      class PresFilterMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           PresFilterMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // Uncomp
+            bool uncomp
+           ;;
+           
+           // Comp
+            bool comp
+           ;;
+           
+       };
+       
+       PresFilterMode* presFilterMode;
+       
+       
+   };
+   
+   } // namespace IMU
+   
+   namespace INS
+   {
+    class InsSolLla : public Register
+   {
+       public:
+       InsSolLla() : Register(new VN::Registers::INS::InsSolLla())
+       {
+       };
+       
+        double timeGpsTow
+       ;;
+       
+        uint16_t timeGpsWeek
+       ;;
+       
+        VN::InsStatus insStatus
+       ;;
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        double posLat
+       ;;
+       
+        double posLon
+       ;;
+       
+        double posAlt
+       ;;
+       
+        float velN
+       ;;
+       
+        float velE
+       ;;
+       
+        float velD
+       ;;
+       
+        float attUncertainty
+       ;;
+       
+        float posUncertainty
+       ;;
+       
+        float velUncertainty
+       ;;
+       
+       
+   };
+   
+    class InsSolEcef : public Register
+   {
+       public:
+       InsSolEcef() : Register(new VN::Registers::INS::InsSolEcef())
+       {
+       };
+       
+        double timeGpsTow
+       ;;
+       
+        uint16_t timeGpsWeek
+       ;;
+       
+        VN::InsStatus insStatus
+       ;;
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        double posEx
+       ;;
+       
+        double posEy
+       ;;
+       
+        double posEz
+       ;;
+       
+        float velEx
+       ;;
+       
+        float velEy
+       ;;
+       
+        float velEz
+       ;;
+       
+        float attUncertainty
+       ;;
+       
+        float posUncertainty
+       ;;
+       
+        float velUncertainty
+       ;;
+       
+       
+   };
+   
+    class InsBasicConfig : public Register
+   {
+       public:
+       InsBasicConfig() : Register(new VN::Registers::INS::InsBasicConfig())
+       {
+       };
+       
+       enum class Scenario : uint8_t
+       {
+           Ahrs = 0,
+           GnssInsWithPressure = 1,
+           GnssInsNoPressure = 2,
+           DualGnssNoPressure = 3,
+           DualGnssWithPressure = 5,
+       };
+        Scenario scenario
+       ;;
+       
+       enum class AhrsAiding : uint8_t
+       {
+           Disable = 0,
+           Enable = 1,
+       };
+        AhrsAiding ahrsAiding
+       ;;
+       
+       enum class EstBaseline : uint8_t
+       {
+           Disable = 0,
+           Enable = 1,
+       };
+        EstBaseline estBaseline
+       ;;
+       
+        uint8_t resv
+       ;;
+       
+       
+   };
+   
+    class InsStateLla : public Register
+   {
+       public:
+       InsStateLla() : Register(new VN::Registers::INS::InsStateLla())
+       {
+       };
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        double posLat
+       ;;
+       
+        double posLon
+       ;;
+       
+        double posAlt
+       ;;
+       
+        float velN
+       ;;
+       
+        float velE
+       ;;
+       
+        float velD
+       ;;
+       
+        float accelX
+       ;;
+       
+        float accelY
+       ;;
+       
+        float accelZ
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class InsStateEcef : public Register
+   {
+       public:
+       InsStateEcef() : Register(new VN::Registers::INS::InsStateEcef())
+       {
+       };
+       
+        float yaw
+       ;;
+       
+        float pitch
+       ;;
+       
+        float roll
+       ;;
+       
+        double posEx
+       ;;
+       
+        double posEy
+       ;;
+       
+        double posEz
+       ;;
+       
+        float velEx
+       ;;
+       
+        float velEy
+       ;;
+       
+        float velEz
+       ;;
+       
+        float accelX
+       ;;
+       
+        float accelY
+       ;;
+       
+        float accelZ
+       ;;
+       
+        float gyroX
+       ;;
+       
+        float gyroY
+       ;;
+       
+        float gyroZ
+       ;;
+       
+       
+   };
+   
+    class FilterStartupBias : public Register
+   {
+       public:
+       FilterStartupBias() : Register(new VN::Registers::INS::FilterStartupBias())
+       {
+       };
+       
+        float gyroBiasX
+       ;;
+       
+        float gyroBiasY
+       ;;
+       
+        float gyroBiasZ
+       ;;
+       
+        float accelBiasX
+       ;;
+       
+        float accelBiasY
+       ;;
+       
+        float accelBiasZ
+       ;;
+       
+        float presBias
+       ;;
+       
+       
+   };
+   
+    class InsRefOffset : public Register
+   {
+       public:
+       InsRefOffset() : Register(new VN::Registers::INS::InsRefOffset())
+       {
+       };
+       
+        float refOffsetX
+       ;;
+       
+        float refOffsetY
+       ;;
+       
+        float refOffsetZ
+       ;;
+       
+        float refUncertX
+       ;;
+       
+        float refUncertY
+       ;;
+       
+        float refUncertZ
+       ;;
+       
+       
+   };
+   
+    class InsGnssSelect : public Register
+   {
+       public:
+       InsGnssSelect() : Register(new VN::Registers::INS::InsGnssSelect())
+       {
+       };
+       
+       enum class ActiveReceiverSelect : uint8_t
+       {
+           None = 0,
+           PrimaryReceiver = 1,
+           SecondaryReceiver = 2,
+           TertiaryReceiver = 3,
+           FallbackOnFailure = 5,
+       };
+        ActiveReceiverSelect activeReceiverSelect
+       ;;
+       
+        uint8_t usedForNavTime
+       ;;
+       
+        uint8_t hysteresisTime
+       ;;
+       
+       enum class UseGnssCompass : uint8_t
+       {
+           Off = 0,
+           On = 1,
+       };
+        UseGnssCompass useGnssCompass
+       ;;
+       
+        uint8_t resv1
+       ;;
+       
+        uint8_t resv2
+       ;;
+       
+       
+   };
+   
+   } // namespace INS
+   
+   namespace System
+   {
+    class UserTag : public Register
+   {
+       public:
+       UserTag() : Register(new VN::Registers::System::UserTag())
+       {
+       };
+       
+        String* tag
+       ;
+       
+       
+   };
+   
+    class Model : public Register
+   {
+       public:
+       Model() : Register(new VN::Registers::System::Model())
+       {
+       };
+       
+        String* model
+       ;
+       
+       
+   };
+   
+    class HwVer : public Register
+   {
+       public:
+       HwVer() : Register(new VN::Registers::System::HwVer())
+       {
+       };
+       
+        uint32_t hwVer
+       ;;
+       
+        uint32_t hwMinVer
+       ;;
+       
+       
+   };
+   
+    class Serial : public Register
+   {
+       public:
+       Serial() : Register(new VN::Registers::System::Serial())
+       {
+       };
+       
+        uint32_t serialNum
+       ;;
+       
+       
+   };
+   
+    class FwVer : public Register
+   {
+       public:
+       FwVer() : Register(new VN::Registers::System::FwVer())
+       {
+       };
+       
+        String* fwVer
+       ;
+       
+       
+   };
+   
+    class BaudRate : public Register
+   {
+       public:
+       BaudRate() : Register(new VN::Registers::System::BaudRate())
+       {
+       };
+       
+       enum class BaudRates : uint32_t
+       {
+           Baud9600 = 9600,
+           Baud19200 = 19200,
+           Baud38400 = 38400,
+           Baud57600 = 57600,
+           Baud115200 = 115200,
+           Baud128000 = 128000,
+           Baud230400 = 230400,
+           Baud460800 = 460800,
+           Baud921600 = 921600,
+       };
+        BaudRates baudRate
+       ;;
+       
+       enum class SerialPort : uint8_t
+       {
+           ActiveSerial = 0,                       
+           Serial1 = 1,
+           Serial2 = 2,
+           Poll = static_cast<uint8_t>('?')
+       };
+        SerialPort serialPort
+       ;;
+       
+       
+   };
+   
+    class AsyncOutputType : public Register
+   {
+       public:
+       AsyncOutputType() : Register(new VN::Registers::System::AsyncOutputType())
+       {
+       };
+       
+       enum class Ador : uint32_t
+       {
+           OFF = 0,
+           YPR = 1,
+           QTN = 2,
+           QMR = 8,
+           MAG = 10,
+           ACC = 11,
+           GYR = 12,
+           MAR = 13,
+           YMR = 14,
+           YBA = 16,
+           YIA = 17,
+           IMU = 19,
+           GPS = 20,
+           GPE = 21,
+           INS = 22,
+           INE = 23,
+           ISL = 28,
+           ISE = 29,
+           DTV = 30,
+           G2S = 32,
+           G2E = 33,
+           HVE = 34,
+       };
+        Ador ador
+       ;;
+       
+       enum class SerialPort : uint8_t
+       {
+           ActiveSerial = 0,                       
+           Serial1 = 1,
+           Serial2 = 2,
+           Poll = static_cast<uint8_t>('?')
+       };
+        SerialPort serialPort
+       ;;
+       
+       
+   };
+   
+    class AsyncOutputFreq : public Register
+   {
+       public:
+       AsyncOutputFreq() : Register(new VN::Registers::System::AsyncOutputFreq())
+       {
+       };
+       
+       enum class Adof : uint32_t
+       {
+           Rate0Hz = 0,
+           Rate1Hz = 1,
+           Rate2Hz = 2,
+           Rate4Hz = 4,
+           Rate5Hz = 5,
+           Rate10Hz = 10,
+           Rate20Hz = 20,
+           Rate25Hz = 25,
+           Rate40Hz = 40,
+           Rate50Hz = 50,
+           Rate100Hz = 100,
+           Rate200Hz = 200,
+       };
+        Adof adof
+       ;;
+       
+       enum class SerialPort : uint8_t
+       {
+           ActiveSerial = 0,                       
+           Serial1 = 1,
+           Serial2 = 2,
+           Poll = static_cast<uint8_t>('?')
+       };
+        SerialPort serialPort
+       ;;
+       
+       
+   };
+   
+    class ProtocolControl : public Register
+   {
+       public:
+       ProtocolControl() : Register(new VN::Registers::System::ProtocolControl())
+       {
+       };
+       
+       enum class AsciiAppendCount : uint8_t
+       {
+           None = 0,
+           SyncInCount = 1,
+           SyncInTime = 2,
+           SyncOutCount = 3,
+           GpsPps = 4,
+           GpsTow = 5,
+       };
+        AsciiAppendCount asciiAppendCount
+       ;;
+       
+       enum class AsciiAppendStatus : uint8_t
+       {
+           None = 0,
+           Ahrs = 1,
+           Ins = 2,
+           Imu = 3,
+           Gnss1 = 4,
+           Gnss2 = 5,
+           Gnss3 = 6,
+       };
+        AsciiAppendStatus asciiAppendStatus
+       ;;
+       
+       enum class SpiAppendCount : uint8_t
+       {
+           None = 0,
+           SyncInCount = 1,
+           SyncInTime = 2,
+           SyncOutCount = 3,
+           GpsPps = 4,
+           GpsTow = 5,
+       };
+        SpiAppendCount spiAppendCount
+       ;;
+       
+       enum class SpiAppendStatus : uint8_t
+       {
+           None = 0,
+           Ahrs = 1,
+           Ins = 2,
+           Imu = 3,
+           Gnss1 = 4,
+           Gnss2 = 5,
+           Gnss3 = 6,
+       };
+        SpiAppendStatus spiAppendStatus
+       ;;
+       
+       enum class AsciiChecksum : uint8_t
+       {
+           Checksum8bit = 1,
+           Crc16bit = 3,
+       };
+        AsciiChecksum asciiChecksum
+       ;;
+       
+       enum class SpiChecksum : uint8_t
+       {
+           Off = 0,
+           Checksum8bit = 1,
+           Crc16bit = 3,
+       };
+        SpiChecksum spiChecksum
+       ;;
+       
+       enum class ErrorMode : uint8_t
+       {
+           Ignore = 0,
+           SendError = 1,
+           AdorOff = 2,
+       };
+        ErrorMode errorMode
+       ;;
+       
+       
+   };
+   
+    class SyncControl : public Register
+   {
+       public:
+       SyncControl() : Register(new VN::Registers::System::SyncControl())
+       {
+       };
+       
+       enum class SyncInMode : uint8_t
+       {
+           Disable = 0,
+           Count = 3,
+           ImuSample = 4,
+           AsyncAll = 5,
+           Async0 = 6,
+       };
+        SyncInMode syncInMode
+       ;;
+       
+       enum class SyncInEdge : uint8_t
+       {
+           RisingEdge = 0,
+           FallingEdge = 1,
+       };
+        SyncInEdge syncInEdge
+       ;;
+       
+        uint16_t syncInSkipFactor
+       ;;
+       
+        uint32_t resv1
+       ;;
+       
+       enum class SyncOutMode : uint8_t
+       {
+           None = 0,
+           ImuStart = 1,
+           ImuReady = 2,
+           NavReady = 3,
+           GpsPps = 6,
+       };
+        SyncOutMode syncOutMode
+       ;;
+       
+       enum class SyncOutPolarity : uint8_t
+       {
+           NegativePulse = 0,
+           PositivePulse = 1,
+       };
+        SyncOutPolarity syncOutPolarity
+       ;;
+       
+        uint16_t syncOutSkipFactor
+       ;;
+       
+        uint32_t syncOutPulseWidth
+       ;;
+       
+        uint32_t resv2
+       ;;
+       
+       
+   };
+   
+    class SyncStatus : public Register
+   {
+       public:
+       SyncStatus() : Register(new VN::Registers::System::SyncStatus())
+       {
+       };
+       
+        uint32_t syncInCount
+       ;;
+       
+        uint32_t syncInTime
+       ;;
+       
+        uint32_t syncOutCount
+       ;;
+       
+       
+   };
+   
+    class BinaryOutput : public Register
+   {
+       
+       public:
+       BinaryOutput(VN::Register* reg) : Register(reg)
+       {
+           asyncMode = gcnew AsyncMode(reg);
+           common = gcnew CommonGroup(reg);
+           time = gcnew TimeGroup(reg);
+           imu = gcnew ImuGroup(reg);
+           gnss = gcnew GnssGroup(reg);
+           attitude = gcnew AttitudeGroup(reg);
+           ins = gcnew InsGroup(reg);
+           gnss2 = gcnew Gnss2Group(reg);
+           gnss3 = gcnew Gnss3Group(reg);
+           
+       };
+       
+      class AsyncMode
+       {
+           VN::Register* _reg;
+           
+           public:
+           AsyncMode(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint16_t _value                
+           ;;
+           
+           // Serial1
+            bool serial1
+           ;;
+           
+           // Serial2
+            bool serial2
+           ;;
+           
+           // Spi
+            bool spi
+           ;;
+           
+       };
+       
+       AsyncMode* asyncMode;
+       
+        uint16_t rateDivisor
+       ;;
+       
+       VN::BinaryHeader toBinaryHeader()
+       {
+           return ((VN::Registers::System::BinaryOutput *)_reg)->toBinaryHeader();
+       }
+       
+      class CommonGroup
+       {
+           VN::Register* _reg;
+           
+           public:
+           CommonGroup(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // TimeStartup
+            bool timeStartup
+           ;
+           
+           // TimeGps
+            bool timeGps
+           ;
+           
+           // TimeSyncIn
+            bool timeSyncIn
+           ;
+           
+           // Ypr
+            bool ypr
+           ;
+           
+           // Quaternion
+            bool quaternion
+           ;
+           
+           // AngularRate
+            bool angularRate
+           ;
+           
+           // PosLla
+            bool posLla
+           ;
+           
+           // VelNed
+            bool velNed
+           ;
+           
+           // Accel
+            bool accel
+           ;
+           
+           // Imu
+            bool imu
+           ;
+           
+           // MagPres
+            bool magPres
+           ;
+           
+           // Deltas
+            bool deltas
+           ;
+           
+           // InsStatus
+            bool insStatus
+           ;
+           
+           // SyncInCnt
+            bool syncInCnt
+           ;
+           
+           // TimeGpsPps
+            bool timeGpsPps
+           ;
+           
+       };
+       
+       CommonGroup* common;
+       
+      class TimeGroup
+       {
+           VN::Register* _reg;
+           
+           public:
+           TimeGroup(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // TimeStartup
+            bool timeStartup
+           ;
+           
+           // TimeGps
+            bool timeGps
+           ;
+           
+           // TimeGpsTow
+            bool timeGpsTow
+           ;
+           
+           // TimeGpsWeek
+            bool timeGpsWeek
+           ;
+           
+           // TimeSyncIn
+            bool timeSyncIn
+           ;
+           
+           // TimeGpsPps
+            bool timeGpsPps
+           ;
+           
+           // TimeUtc
+            bool timeUtc
+           ;
+           
+           // SyncInCnt
+            bool syncInCnt
+           ;
+           
+           // SyncOutCnt
+            bool syncOutCnt
+           ;
+           
+           // TimeStatus
+            bool timeStatus
+           ;
+           
+       };
+       
+       TimeGroup* time;
+       
+      class ImuGroup
+       {
+           VN::Register* _reg;
+           
+           public:
+           ImuGroup(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // ImuStatus
+            bool imuStatus
+           ;
+           
+           // UncompMag
+            bool uncompMag
+           ;
+           
+           // UncompAccel
+            bool uncompAccel
+           ;
+           
+           // UncompGyro
+            bool uncompGyro
+           ;
+           
+           // Temperature
+            bool temperature
+           ;
+           
+           // Pressure
+            bool pressure
+           ;
+           
+           // DeltaTheta
+            bool deltaTheta
+           ;
+           
+           // DeltaVel
+            bool deltaVel
+           ;
+           
+           // Mag
+            bool mag
+           ;
+           
+           // Accel
+            bool accel
+           ;
+           
+           // AngularRate
+            bool angularRate
+           ;
+           
+           // SensSat
+            bool sensSat
+           ;
+           
+       };
+       
+       ImuGroup* imu;
+       
+      class GnssGroup
+       {
+           VN::Register* _reg;
+           
+           public:
+           GnssGroup(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // Gnss1TimeUtc
+            bool gnss1TimeUtc
+           ;
+           
+           // Gps1Tow
+            bool gps1Tow
+           ;
+           
+           // Gps1Week
+            bool gps1Week
+           ;
+           
+           // Gnss1NumSats
+            bool gnss1NumSats
+           ;
+           
+           // Gnss1Fix
+            bool gnss1Fix
+           ;
+           
+           // Gnss1PosLla
+            bool gnss1PosLla
+           ;
+           
+           // Gnss1PosEcef
+            bool gnss1PosEcef
+           ;
+           
+           // Gnss1VelNed
+            bool gnss1VelNed
+           ;
+           
+           // Gnss1VelEcef
+            bool gnss1VelEcef
+           ;
+           
+           // Gnss1PosUncertainty
+            bool gnss1PosUncertainty
+           ;
+           
+           // Gnss1VelUncertainty
+            bool gnss1VelUncertainty
+           ;
+           
+           // Gnss1TimeUncertainty
+            bool gnss1TimeUncertainty
+           ;
+           
+           // Gnss1TimeInfo
+            bool gnss1TimeInfo
+           ;
+           
+           // Gnss1Dop
+            bool gnss1Dop
+           ;
+           
+           // Gnss1SatInfo
+            bool gnss1SatInfo
+           ;
+           
+           // Gnss1RawMeas
+            bool gnss1RawMeas
+           ;
+           
+           // Gnss1Status
+            bool gnss1Status
+           ;
+           
+           // Gnss1AltMSL
+            bool gnss1AltMsl
+           ;
+           
+       };
+       
+       GnssGroup* gnss;
+       
+      class AttitudeGroup
+       {
+           VN::Register* _reg;
+           
+           public:
+           AttitudeGroup(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // Ypr
+            bool ypr
+           ;
+           
+           // Quaternion
+            bool quaternion
+           ;
+           
+           // Dcm
+            bool dcm
+           ;
+           
+           // MagNed
+            bool magNed
+           ;
+           
+           // AccelNed
+            bool accelNed
+           ;
+           
+           // LinBodyAcc
+            bool linBodyAcc
+           ;
+           
+           // LinAccelNed
+            bool linAccelNed
+           ;
+           
+           // YprU
+            bool yprU
+           ;
+           
+           // Heave
+            bool heave
+           ;
+           
+           // AttU
+            bool attU
+           ;
+           
+       };
+       
+       AttitudeGroup* attitude;
+       
+      class InsGroup
+       {
+           VN::Register* _reg;
+           
+           public:
+           InsGroup(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // InsStatus
+            bool insStatus
+           ;
+           
+           // PosLla
+            bool posLla
+           ;
+           
+           // PosEcef
+            bool posEcef
+           ;
+           
+           // VelBody
+            bool velBody
+           ;
+           
+           // VelNed
+            bool velNed
+           ;
+           
+           // VelEcef
+            bool velEcef
+           ;
+           
+           // MagEcef
+            bool magEcef
+           ;
+           
+           // AccelEcef
+            bool accelEcef
+           ;
+           
+           // LinAccelEcef
+            bool linAccelEcef
+           ;
+           
+           // PosU
+            bool posU
+           ;
+           
+           // VelU
+            bool velU
+           ;
+           
+       };
+       
+       InsGroup* ins;
+       
+      class Gnss2Group
+       {
+           VN::Register* _reg;
+           
+           public:
+           Gnss2Group(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // Gnss2TimeUtc
+            bool gnss2TimeUtc
+           ;
+           
+           // Gps2Tow
+            bool gps2Tow
+           ;
+           
+           // Gps2Week
+            bool gps2Week
+           ;
+           
+           // Gnss2NumSats
+            bool gnss2NumSats
+           ;
+           
+           // Gnss2Fix
+            bool gnss2Fix
+           ;
+           
+           // Gnss2PosLla
+            bool gnss2PosLla
+           ;
+           
+           // Gnss2PosEcef
+            bool gnss2PosEcef
+           ;
+           
+           // Gnss2VelNed
+            bool gnss2VelNed
+           ;
+           
+           // Gnss2VelEcef
+            bool gnss2VelEcef
+           ;
+           
+           // Gnss2PosUncertainty
+            bool gnss2PosUncertainty
+           ;
+           
+           // Gnss2VelUncertainty
+            bool gnss2VelUncertainty
+           ;
+           
+           // Gnss2TimeUncertainty
+            bool gnss2TimeUncertainty
+           ;
+           
+           // Gnss2TimeInfo
+            bool gnss2TimeInfo
+           ;
+           
+           // Gnss2Dop
+            bool gnss2Dop
+           ;
+           
+           // Gnss2SatInfo
+            bool gnss2SatInfo
+           ;
+           
+           // Gnss2RawMeas
+            bool gnss2RawMeas
+           ;
+           
+           // Gnss2Status
+            bool gnss2Status
+           ;
+           
+           // Gnss2AltMSL
+            bool gnss2AltMsl
+           ;
+           
+       };
+       
+       Gnss2Group* gnss2;
+       
+      class Gnss3Group
+       {
+           VN::Register* _reg;
+           
+           public:
+           Gnss3Group(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value
+           ;
+           
+           // Gnss3TimeUtc
+            bool gnss3TimeUtc
+           ;
+           
+           // Gps3Tow
+            bool gps3Tow
+           ;
+           
+           // Gps3Week
+            bool gps3Week
+           ;
+           
+           // Gnss3NumSats
+            bool gnss3NumSats
+           ;
+           
+           // Gnss3Fix
+            bool gnss3Fix
+           ;
+           
+           // Gnss3PosLla
+            bool gnss3PosLla
+           ;
+           
+           // Gnss3PosEcef
+            bool gnss3PosEcef
+           ;
+           
+           // Gnss3VelNed
+            bool gnss3VelNed
+           ;
+           
+           // Gnss3VelEcef
+            bool gnss3VelEcef
+           ;
+           
+           // Gnss3PosUncertainty
+            bool gnss3PosUncertainty
+           ;
+           
+           // Gnss3VelUncertainty
+            bool gnss3VelUncertainty
+           ;
+           
+           // Gnss3TimeUncertainty
+            bool gnss3TimeUncertainty
+           ;
+           
+           // Gnss3TimeInfo
+            bool gnss3TimeInfo
+           ;
+           
+           // Gnss3Dop
+            bool gnss3Dop
+           ;
+           
+           // Gnss3SatInfo
+            bool gnss3SatInfo
+           ;
+           
+           // Gnss3RawMeas
+            bool gnss3RawMeas
+           ;
+           
+           // Gnss3Status
+            bool gnss3Status
+           ;
+           
+           // Gnss3AltMSL
+            bool gnss3AltMsl
+           ;
+           
+       };
+       
+       Gnss3Group* gnss3;
+       
+       
+   };
+   
+    class BinaryOutput1 : public BinaryOutput
+   {
+       public:
+       BinaryOutput1() : BinaryOutput(new VN::Registers::System::BinaryOutput1()) {};
+   };
+   
+    class BinaryOutput2 : public BinaryOutput
+   {
+       public:
+       BinaryOutput2() : BinaryOutput(new VN::Registers::System::BinaryOutput2()) {};
+   };
+   
+    class BinaryOutput3 : public BinaryOutput
+   {
+       public:
+       BinaryOutput3() : BinaryOutput(new VN::Registers::System::BinaryOutput3()) {};
+   };
+   
+    class NmeaOutput1 : public Register
+   {
+       public:
+       NmeaOutput1() : Register(new VN::Registers::System::NmeaOutput1())
+       {
+           msgSelection = gcnew MsgSelection(_reg);
+       };
+       
+       enum class Port : uint8_t
+       {
+           None = 0,
+           Serial1 = 1,
+           Serial2 = 2,
+           Serial1And2 = 3,
+       };
+        Port port
+       ;;
+       
+       enum class Rate : uint8_t
+       {
+           Rate0Hz = 0,
+           Rate1Hz = 1,
+           Rate5Hz = 5,
+           Rate10Hz = 10,
+           Rate20Hz = 20,
+       };
+        Rate rate
+       ;;
+       
+       enum class Mode : uint8_t
+       {
+           V41GPID = 0,
+           V23GPID = 1,
+           V41SYSID = 2,
+       };
+        Mode mode
+       ;;
+       
+       enum class GnssSelect : uint8_t
+       {
+           GnssA = 0,
+           ActiveReceiver = 1,
+       };
+        GnssSelect gnssSelect
+       ;;
+       
+      class MsgSelection
+       {
+           VN::Register* _reg;
+           
+           public:
+           MsgSelection(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value                
+           ;;
+           
+           // RMC_GNSS
+            bool rmcGnss
+           ;;
+           
+           // RMC_INS
+            bool rmcIns
+           ;;
+           
+           // GGA_GNSS
+            bool ggaGnss
+           ;;
+           
+           // GGA_INS
+            bool ggaIns
+           ;;
+           
+           // GLL_GNSS
+            bool gllGnss
+           ;;
+           
+           // GLL_INS
+            bool gllIns
+           ;;
+           
+           // GSA_GNSS
+            bool gsaGnss
+           ;;
+           
+           // GSV_GNSS
+            bool gsvGnss
+           ;;
+           
+           // HDG_INS
+            bool hdgIns
+           ;;
+           
+           // HDT_INS
+            bool hdtIns
+           ;;
+           
+           // THS_INS
+            bool thsIns
+           ;;
+           
+           // VTG_GNSS
+            bool vtgGnss
+           ;;
+           
+           // VTG_INS
+            bool vtgIns
+           ;;
+           
+           // ZDA_GNSS
+            bool zdaGnss
+           ;;
+           
+           // ZDA_INS
+            bool zdaIns
+           ;;
+           
+           // PASHR_INS
+            bool pashrIns
+           ;;
+           
+           // TSS1_INS
+            bool tss1Ins
+           ;;
+           
+           // INDYN
+            bool indyn
+           ;;
+           
+       };
+       
+       MsgSelection* msgSelection;
+       
+       
+   };
+   
+    class NmeaOutput2 : public Register
+   {
+       public:
+       NmeaOutput2() : Register(new VN::Registers::System::NmeaOutput2())
+       {
+           msgSelection = gcnew MsgSelection(_reg);
+       };
+       
+       enum class Port : uint8_t
+       {
+           None = 0,
+           Serial1 = 1,
+           Serial2 = 2,
+           Serial1And2 = 3,
+       };
+        Port port
+       ;;
+       
+       enum class Rate : uint8_t
+       {
+           Rate0Hz = 0,
+           Rate1Hz = 1,
+           Rate5Hz = 5,
+           Rate10Hz = 10,
+           Rate20Hz = 20,
+       };
+        Rate rate
+       ;;
+       
+       enum class Mode : uint8_t
+       {
+           V41GPID = 0,
+           V23GPID = 1,
+           V41SYSID = 2,
+       };
+        Mode mode
+       ;;
+       
+       enum class GnssSelect : uint8_t
+       {
+           GnssA = 0,
+           ActiveReceiver = 1,
+       };
+        GnssSelect gnssSelect
+       ;;
+       
+      class MsgSelection
+       {
+           VN::Register* _reg;
+           
+           public:
+           MsgSelection(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint32_t _value                
+           ;;
+           
+           // RMC_GNSS
+            bool rmcGnss
+           ;;
+           
+           // RMC_INS
+            bool rmcIns
+           ;;
+           
+           // GGA_GNSS
+            bool ggaGnss
+           ;;
+           
+           // GGA_INS
+            bool ggaIns
+           ;;
+           
+           // GLL_GNSS
+            bool gllGnss
+           ;;
+           
+           // GLL_INS
+            bool gllIns
+           ;;
+           
+           // GSA_GNSS
+            bool gsaGnss
+           ;;
+           
+           // GSV_GNSS
+            bool gsvGnss
+           ;;
+           
+           // HDG_INS
+            bool hdgIns
+           ;;
+           
+           // HDT_INS
+            bool hdtIns
+           ;;
+           
+           // THS_INS
+            bool thsIns
+           ;;
+           
+           // VTG_GNSS
+            bool vtgGnss
+           ;;
+           
+           // VTG_INS
+            bool vtgIns
+           ;;
+           
+           // ZDA_GNSS
+            bool zdaGnss
+           ;;
+           
+           // ZDA_INS
+            bool zdaIns
+           ;;
+           
+           // PASHR_INS
+            bool pashrIns
+           ;;
+           
+           // TSS1_INS
+            bool tss1Ins
+           ;;
+           
+           // INDYN
+            bool indyn
+           ;;
+           
+       };
+       
+       MsgSelection* msgSelection;
+       
+       
+   };
+   
+    class LegacyCompatibilitySettings : public Register
+   {
+       public:
+       LegacyCompatibilitySettings() : Register(new VN::Registers::System::LegacyCompatibilitySettings())
+       {
+           gnssLegacy = gcnew GnssLegacy(_reg);
+       };
+       
+       enum class InsLegacy : uint8_t
+       {
+           Current = 0,
+           Legacy = 1,
+       };
+        InsLegacy insLegacy
+       ;;
+       
+      class GnssLegacy
+       {
+           VN::Register* _reg;
+           
+           public:
+           GnssLegacy(VN::Register* reg)
+           {
+               _reg = reg;
+           }
+           
+            uint8_t _value                 
+           ;;
+           
+           // LegacyGnssFix
+            bool legacyGnssFix
+           ;;
+           
+           // RequireReg55Reset
+            bool requireReg55Reset
+           ;;
+           
+           // alwaysPpsPulse
+            bool alwaysPpsPulse
+           ;;
+           
+       };
+       
+       GnssLegacy* gnssLegacy;
+       
+       enum class ImuLegacy : uint8_t
+       {
+           Current = 0,
+           Legacy = 1,
+       };
+        ImuLegacy imuLegacy
+       ;;
+       
+       enum class HwLegacy : uint8_t
+       {
+           Current = 0,
+           Legacy = 1,
+       };
+        HwLegacy hwLegacy
+       ;;
+       
+       
+   };
+   
+   } // namespace System
+   
+   namespace VelocityAiding
+   {
+    class VelAidingMeas : public Register
+   {
+       public:
+       VelAidingMeas() : Register(new VN::Registers::VelocityAiding::VelAidingMeas())
+       {
+       };
+       
+        float velocityX
+       ;;
+       
+        float velocityY
+       ;;
+       
+        float velocityZ
+       ;;
+       
+       
+   };
+   
+    class VelAidingControl : public Register
+   {
+       public:
+       VelAidingControl() : Register(new VN::Registers::VelocityAiding::VelAidingControl())
+       {
+       };
+       
+       enum class VelAidEnable : uint8_t
+       {
+           Disable = 0,
+           Enable = 1,
+       };
+        VelAidEnable velAidEnable
+       ;;
+       
+        float velUncertTuning
+       ;;
+       
+        float resv
+       ;;
+       
+       
+   };
+   
+   } // namespace VelocityAiding
+   
+   namespace WorldMagGravityModel
+   {
+    class RefModelConfig : public Register
+   {
+       public:
+       RefModelConfig() : Register(new VN::Registers::WorldMagGravityModel::RefModelConfig())
+       {
+       };
+       
+       enum class EnableMagModel : uint8_t
+       {
+           Disabled = 0,
+           Enabled = 1,
+       };
+        EnableMagModel enableMagModel
+       ;;
+       
+       enum class EnableGravityModel : uint8_t
+       {
+           Disabled = 0,
+           Enabled = 1,
+       };
+        EnableGravityModel enableGravityModel
+       ;;
+       
+        uint8_t resv1
+       ;;
+       
+        uint8_t resv2
+       ;;
+       
+        uint32_t recalcThreshold
+       ;;
+       
+        float year
+       ;;
+       
+        double latitude
+       ;;
+       
+        double longitude
+       ;;
+       
+        double altitude
+       ;;
+       
+       
+   };
+   
+   } // namespace WorldMagGravityModel
+   
+   namespace ById {
+   using reg0 = VNSDK::Registers::System::UserTag;
+   using reg1 = VNSDK::Registers::System::Model;
+   using reg2 = VNSDK::Registers::System::HwVer;
+   using reg3 = VNSDK::Registers::System::Serial;
+   using reg4 = VNSDK::Registers::System::FwVer;
+   using reg5 = VNSDK::Registers::System::BaudRate;
+   using reg6 = VNSDK::Registers::System::AsyncOutputType;
+   using reg7 = VNSDK::Registers::System::AsyncOutputFreq;
+   using reg8 = VNSDK::Registers::Attitude::YawPitchRoll;
+   using reg9 = VNSDK::Registers::Attitude::Quaternion;
+   using reg15 = VNSDK::Registers::Attitude::QuatMagAccelRate;
+   using reg17 = VNSDK::Registers::IMU::Mag;
+   using reg18 = VNSDK::Registers::IMU::Accel;
+   using reg19 = VNSDK::Registers::IMU::Gyro;
+   using reg20 = VNSDK::Registers::IMU::MagAccelGyro;
+   using reg21 = VNSDK::Registers::Attitude::MagGravRefVec;
+   using reg23 = VNSDK::Registers::IMU::MagCal;
+   using reg25 = VNSDK::Registers::IMU::AccelCal;
+   using reg26 = VNSDK::Registers::IMU::RefFrameRot;
+   using reg27 = VNSDK::Registers::Attitude::YprMagAccelAngularRates;
+   using reg30 = VNSDK::Registers::System::ProtocolControl;
+   using reg32 = VNSDK::Registers::System::SyncControl;
+   using reg33 = VNSDK::Registers::System::SyncStatus;
+   using reg35 = VNSDK::Registers::Attitude::VpeBasicControl;
+   using reg36 = VNSDK::Registers::Attitude::VpeMagBasicTuning;
+   using reg38 = VNSDK::Registers::Attitude::VpeAccelBasicTuning;
+   using reg44 = VNSDK::Registers::HardSoftIronEstimator::RealTimeHsiControl;
+   using reg47 = VNSDK::Registers::HardSoftIronEstimator::EstMagCal;
+   using reg50 = VNSDK::Registers::VelocityAiding::VelAidingMeas;
+   using reg51 = VNSDK::Registers::VelocityAiding::VelAidingControl;
+   using reg54 = VNSDK::Registers::IMU::ImuMeas;
+   using reg55 = VNSDK::Registers::GNSS::GnssBasicConfig;
+   using reg57 = VNSDK::Registers::GNSS::GnssAOffset;
+   using reg58 = VNSDK::Registers::GNSS::GnssSolLla;
+   using reg59 = VNSDK::Registers::GNSS::GnssSolEcef;
+   using reg63 = VNSDK::Registers::INS::InsSolLla;
+   using reg64 = VNSDK::Registers::INS::InsSolEcef;
+   using reg67 = VNSDK::Registers::INS::InsBasicConfig;
+   using reg72 = VNSDK::Registers::INS::InsStateLla;
+   using reg73 = VNSDK::Registers::INS::InsStateEcef;
+   using reg74 = VNSDK::Registers::INS::FilterStartupBias;
+   using reg75 = VNSDK::Registers::System::BinaryOutput1;
+   using reg76 = VNSDK::Registers::System::BinaryOutput2;
+   using reg77 = VNSDK::Registers::System::BinaryOutput3;
+   using reg80 = VNSDK::Registers::IMU::DeltaThetaVelocity;
+   using reg82 = VNSDK::Registers::IMU::DeltaThetaVelConfig;
+   using reg83 = VNSDK::Registers::WorldMagGravityModel::RefModelConfig;
+   using reg84 = VNSDK::Registers::IMU::GyroCal;
+   using reg85 = VNSDK::Registers::IMU::ImuFilterControl;
+   using reg86 = VNSDK::Registers::GNSSCompass::GnssCompassSignalHealthStatus;
+   using reg93 = VNSDK::Registers::GNSSCompass::GnssCompassBaseline;
+   using reg97 = VNSDK::Registers::GNSSCompass::GnssCompassEstBaseline;
+   using reg98 = VNSDK::Registers::GNSSCompass::GnssCompassStartupStatus;
+   using reg99 = VNSDK::Registers::GNSS::GnssSystemConfig;
+   using reg100 = VNSDK::Registers::GNSS::GnssSyncConfig;
+   using reg101 = VNSDK::Registers::System::NmeaOutput1;
+   using reg102 = VNSDK::Registers::System::NmeaOutput2;
+   using reg103 = VNSDK::Registers::GNSS::Gnss2SolLla;
+   using reg104 = VNSDK::Registers::GNSS::Gnss2SolEcef;
+   using reg105 = VNSDK::Registers::INS::InsRefOffset;
+   using reg115 = VNSDK::Registers::Heave::HeaveOutputs;
+   using reg116 = VNSDK::Registers::Heave::HeaveBasicConfig;
+   using reg144 = VNSDK::Registers::INS::InsGnssSelect;
+   using reg157 = VNSDK::Registers::GNSS::ExtGnssOffset;
+   using reg206 = VNSDK::Registers::System::LegacyCompatibilitySettings;
+   using reg239 = VNSDK::Registers::Attitude::YprLinearBodyAccelAngularRates;
+   using reg240 = VNSDK::Registers::Attitude::YprLinearInertialAccelAngularRates;
+   } // namespace ById
+   } // namespace Registers
+   } // namespace VNSDK
+   
+   
+   #endif //VN_CLI_REGISTERS_HPP_
+   
+   

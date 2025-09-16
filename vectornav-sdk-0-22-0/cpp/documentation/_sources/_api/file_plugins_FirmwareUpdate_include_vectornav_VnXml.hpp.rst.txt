@@ -1,0 +1,104 @@
+
+.. _file_plugins_FirmwareUpdate_include_vectornav_VnXml.hpp:
+
+File VnXml.hpp
+==============
+
+|exhale_lsh| :ref:`Parent directory <dir_plugins_FirmwareUpdate_include_vectornav>` (``plugins\FirmwareUpdate\include\vectornav``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``plugins\FirmwareUpdate\include\vectornav\VnXml.hpp``)
+-------------------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_plugins_FirmwareUpdate_include_vectornav_VnXml.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``cstdint``
+
+- ``vectornav/HAL/File.hpp``
+
+- ``vectornav/Interface/Errors.hpp``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_plugins_FirmwareUpdate_include_vectornav_FirmwareUpdater.hpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_VN`
+
+- :ref:`namespace_VN__VnXml`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_struct_v_n_1_1_vn_xml_1_1_component`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum__vn_xml_8hpp_1a3630abe76e409bce945231f4f6ec449f`
+
+- :ref:`exhale_enum__vn_xml_8hpp_1a531007137e2cdcb65c529bcde4cade0c`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function__vn_xml_8hpp_1a07a5d136144a9ad9fe228ce7a7b64f10`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef__vn_xml_8hpp_1a306fb12fa82b0569bb0271e07ff0ac57`
+
+- :ref:`exhale_typedef__vn_xml_8hpp_1aa0c2613046c8f0b8a7a00da24dd8c622`
+
+- :ref:`exhale_typedef__vn_xml_8hpp_1af57cfd11cc7ffaa4672b3e8c2ca913a8`
+
+- :ref:`exhale_typedef__vn_xml_8hpp_1a3e56278dc25abfaf9384f0331a8e2c63`
+
+- :ref:`exhale_typedef__vn_xml_8hpp_1a1825956e166b00bd67b3d2b1ffc07eb1`
+
+- :ref:`exhale_typedef__vn_xml_8hpp_1af4d00933878f969cc425ab0d2e15e6fa`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable__vn_xml_8hpp_1a9cdc97c5bfe0be40ff866b94575a8a12`
+

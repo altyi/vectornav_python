@@ -1,0 +1,221 @@
+VectorNav CLI Migration Guide
+*****************************
+.. _MigrationGuide:
+
+Highlights
+----------
+The VNSDK has several updated features since the Programming Library to enhance user-friendliness and performance:
+
+* high-rate data stability (can output above 200 Hz)
+* Significant performance improvement
+* Added measurements and registers
+* The ability to catch exceptions
+* Ability to log raw serial data
+
+Migrating from the VectorNav Programming Library to the VNSDK
+-------------------------------------------------------------
+The CLI SDK wraps the C++ SDK using `C++/CLI <https://learn.microsoft.com/en-us/cpp/dotnet/dotnet-programming-with-cpp-cli-visual-cpp?view=msvc-170>`_ to provide a .NET-accessible dll file for use in MATLAB or C#.
+This migration guide shows the basic communication differences between the VNSDK and the Programming Library for MATLAB and C#.
+
+Establishing Communication
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+The COM port must be known to connect to the sensor.
+For the VectorNav Programming Library, the correct baud rate is required.
+With the VNSDK, there is an option to specify the baud rate using the *Connect* attribute, but now there is an *AutoConnect* attribute that will poll the sensor for its baud rate.
+
+To communicate with the sensor, a sensor object has to be created before connection can be established.
+Once the object is created, the sensor is able to connect.
+On the VectorNav Programming Library this was done by
+
+.. tab:: C#
+
+    .. code-block::  C#
+
+        var vs = new VnSensor();
+        vs.Connect(SensorPort, SensorBaudRate);
+
+.. tab::  MATLAB
+
+    .. code-block:: matlab
+
+        ez = EzAsyncData.Connect(SensorComPort, SensorBaudRate);
+
+While on the VNSDK, the sensor is connected using the *AutoConnect* attribute below
+
+.. tab:: C#
+
+    .. literalinclude::  ../../../cs/examples/GettingStarted/GettingStarted.cs
+        :linenos:
+        :lineno-match:
+        :language: c#
+        :start-at: Sensor();
+        :end-at:  sensor.AutoConnect(port);
+
+.. tab::  MATLAB
+
+    .. literalinclude::  ../../../matlab/examples/GettingStarted/GettingStarted.m
+        :linenos:
+        :lineno-match:
+        :language: matlab
+        :start-at: if exist('sensor','var')
+        :end-at: sensor.AutoConnect(port_name);
+
+Accessing Registers
+--------------------
+
+In the VectorNav Programming Library, a VnSensor object was created, and all registers were attributes of that object.
+In the VNSDK, a Sensor object is still created for interaction, but now only two objects, *ReadRegister* and *WriteRegister*, for interacting with the registers exists.
+Each register is now its own object that will be populated when a *ReadRegister* or *WriteRegister* request is sent.
+The examples below will show differences between frequently used commands.
+
+Reading Registers
+^^^^^^^^^^^^^^^^^
+Previously, to read a register the user would create a VnSensor object and create a register attribute.
+For example, this was how the user would read the Yaw, Pitch, Roll register (Register 8) using the VectorNav Programming Library 
+
+.. tab:: C#
+    
+    .. code-block:: C#
+
+        var ypr = vs.ReadYawPitchRoll();
+
+.. tab:: MATLAB
+
+    .. code-block:: matlab
+
+        ez.Sensor.WriteAsyncDataOutputType(AsciiAsync.VNYPR);
+
+In the VNSDK, the user will create a Sensor object, create a Register object, and then use the *ReadRegister* Sensor attribute like in the example below:
+
+.. tab:: C#
+
+    .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+        :linenos:
+        :lineno-match:
+        :language: c#
+        :start-at: VNSDK.Registers.Attitude.YawPitchRoll
+        :end-at: (ypr);
+
+.. tab:: MATLAB
+
+    .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+        :linenos:
+        :lineno-match:
+        :language: matlab
+        :start-at: ypr = Registers.Attitude.YawPitchRoll();
+        :end-at: (ypr);
+
+Writing Registers
+^^^^^^^^^^^^^^^^^
+Writing to a register incorporates the same changes as reading a register.
+The following examples show the difference between writing to the Asynchronous Data Output Frequency register (Register 7) in the Programming Library and the VNSDK.
+To configure the VectorNav Programming Library to output at the frequency of 2 Hz, the user would create the sensor object and then write to the Asynchronous Data Output Frequency register:
+
+.. tab:: C#
+
+    .. code-block:: C#
+
+        vs.WriteAsyncDataOutputFrequency(2);
+
+.. tab:: MATLAB
+
+    .. code-block:: matlab
+
+        ez.Sensor.WriteAsyncDataOutputFrequency(2);
+
+In the VNSDK, the same process as reading from registers is followed:
+
+.. tab:: C#
+
+    .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+        :linenos:
+        :lineno-match:
+        :language: c#
+        :start-at:  String messageType
+        :end-at:  (asyncOutputType);
+    
+.. tab:: MATLAB
+
+    .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+        :linenos:
+        :lineno-match:
+        :language: matlab
+        :start-at: availableEnums
+        :end-at: (asyncDataOutputType);
+
+.. Matlab Available Enums (??)
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. Matlab is able to get enums now???
+
+.. code for it
+
+.. .. code-block:: matlab
+
+..        availableEnums = vnsdkAssembly.Enums;  % Get available enums
+        getEnumNames('VNSDK.Registers.System.AsyncOutputType+Ador', vnsdkAssembly)  % display enum names
+
+Extracting Asynchronous Data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Previously, data was handled using basic callback handlers.
+In the VNSDK, the data will be handled with queues.
+
+Naming Convention
+-----------------
+The naming convention has changed from the Programming Library and has been updated to be consistent between all supported languages. The new naming conventions are as follows:
+
+* Methods and member names are written in **camelCase**
+    For example, a composite data member accessing the acceleration variable will be written ``compositeData.imu.accel``
+* Register enumeratioons are written in **PascalCase** and without the type suffix
+    For example, a register enum for the serial port will be written as ``SerialPort``.
+* A register alias is written in **PascalCase**
+    For example, a register alias for Register 5 is written like ``ById::Reg5``.
+
+Notable Changes and Features
+----------------------------
+Config File
+^^^^^^^^^^^
+Any memory or behavior configurability variables are located in this folder.
+This allows the user to change any variables needed and reduces the need to look through the source code.
+
+Exception Handling
+^^^^^^^^^^^^^^^^^^
+correctly propagates exceptions
+
+Optional Positional Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Exception/Error Handling
+^^^^^^^^^^^^^^^^^^^^^^^^
+Before explaining how to read and write registers, the user should know the differences in handling errors between the two softwares.
+
+In the VectorNav Programming Library, if an error occurred such as an *InsufficientBaudRate* error, the program would throw an exception and crash without providing the user any relevant information.
+The VNSDK does not have exceptions, but instead will return an error code.
+This allows the user to debug their codes easily and lets the user decide how they want to handle any errors encountered.
+
+Added PlugIns
+-------------
+During development, several plugins were created to boost additional functionality that was not available in the previous Programming Library.
+
+Enhanced Firmware Update
+^^^^^^^^^^^^^^^^^^^^^^^^^
+While this plugin was available in the Programming Library, it has been updated with the issuance of the VNSDK.
+The new Firmware Update plugin has the ability to accept both *VNX* and *VNXML* firmware files.
+This plugin allows a user to update their sensor's firmware without having to connect it to VectorNav's Control Center GUI or create their own firmware programmer.
+All firmware updates must be performed over the main serial port, UART-1, and communication must be established before an update can occur.
+
+.. More information on this plugin can be found on the :ref:`pages/FirmwareUpdate` page.
+
+Register Scan
+^^^^^^^^^^^^^
+The Register Scan plugin is a newly added plugin unique to the VNSDK.
+This plugin is capable of scanning each register on a sensor to determine changes from the default configuration.
+An *XML* configuration file is created from this scan.
+
+.. Additional information can be found on the :ref:`pages/RegisterScan` page.
+
+Simple Logger
+^^^^^^^^^^^^^
+The simple logger plugin allows users to easily log data to a binary file.
+This plug in reduces the need for users to write their own logging function.
+Any messages that the user configures for output, in lieu of an insufficient baud rate, will be written to the binary file.

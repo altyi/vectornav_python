@@ -1,0 +1,329 @@
+Key Functionality
+#################
+
+Establishing Communication
+==========================
+
+Connecting to the Unit
+----------------------
+It is first necessary to create a :class:`VNSDK::Sensor` object, which we will use to send commands to the VectorNav unit.
+
+.. tab:: C#
+   
+      .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+         :language: c#
+         :start-at: Sensor();
+         :end-at: Sensor();
+         :dedent: 12
+
+.. tab:: MATLAB
+
+      .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+         :language: matlab
+         :start-at: Sensor();
+         :end-at: ();
+         :dedent: 4
+
+We can then connect to the VectorNav unit using the :func:`VNSDK::Sensor::AutoConnect` method.
+
+.. tab:: C#
+
+   .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+      :language: c#
+      :start-at: sensor.AutoConnect(port);
+      :end-at: sensor.AutoConnect(port);
+      :dedent: 12
+
+.. tab:: MATLAB
+
+   .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+      :language: matlab
+      :start-at: sensor.AutoConnect(port_name);
+      :end-at: sensor.AutoConnect(port_name);
+
+.. tip::
+   If the baud rate is known, the :func:`VNSDK::Sensor::Connect` method can be used, which accepts an extra parameter of the expected baud rate. This is a quicker call, as it does not require scanning all the baud rates.
+   However, this method does not perform any verification of connectivity, so it is necessary to call :func:`VNSDK::Sensor::VerifySensorConnectivity` to ensure communication.
+
+   .. tab:: C#
+
+      .. code-block:: C#
+
+         Sensor sensor = new Sensor();
+         try
+         {
+            sensor.Connect("COM8", Sensor.BaudRate.Baud115200);
+         }
+         catch (Exception ex)
+         {
+            Console.WriteLine($"Error: Failed to connect to sensor. Reason: {ex.Message}");
+            return;
+         }
+         if (!sensor.VerifySensorConnectivity())
+         {
+               Console.WriteLine("Error: Failed to connect to unit.");
+               return 1;
+         }
+
+   .. tab:: MATLAB
+
+      .. code-block:: matlab
+         
+         try
+            sensor = Sensor();
+            sensor.Connect('COM8', Sensor.BaudRate.(BaudRate+BaudRates).Baud115200);
+         catch ME
+            fprintf('Error: Failed to connect to unit. Reason: %s\n', ME.message);
+            return;
+         end
+         if ~sensor.VerifySensorConnectivity()
+            disp('Error: Failed to connect to unit.');
+            return;
+         end
+
+   If ``AutoConnect`` is used, no ``VerifySensorConnectivity`` call is necessary, as it verifies connectivity through the auto connection process at each baud rate. It is therefore the slower of the two methods, by default requiring a maximum of 4.5 seconds.
+
+   To maintain robustness while maintaining the speed of the ``Connect`` method, the ``AutoConnect`` can be used as a fallback when ``VerifySensorConnectivity`` fails.
+
+.. Both ``Connect`` and ``AutoConnect`` will additionally begin a new *listening thread* (This does not occur if threading is disabled. For more information see :ref:`pages/Single-Threaded Operation`). 
+
+Changing Baud Rate
+------------------
+
+Once communication has been established, the baud rate can be reconfigured at any point using the :func:`VNSDK::Sensor::ChangeBaudRate` method.
+
+.. tab:: C#
+
+   .. code-block:: C#
+
+      sensor.ChangeBaudRate(Sensor.BaudRate.Baud921600);
+
+.. tab:: MATLAB
+
+   .. code-block:: matlab
+
+      sensor.ChangeBaudRate(Registers.System.('BaudRate+BaudRates').Baud921600);
+
+.. note::
+   The `ChangeBaudRate` method will send a command to the unit to reconfigure its baud rate, disconnect from serial, and reconnect to the serial port at the specified new baud rate.
+
+.. tip::
+   To ensure the baud rate change persists over a unit power cycle, a :func:`VNSDK::Sensor::WriteSettings` command should be sent.
+
+.. tab:: C#
+
+   .. code-block:: C#
+
+      sensor.WriteSettings();
+
+.. tab:: MATLAB
+
+   .. code-block:: matlab
+
+      sensor.WriteSettings();
+
+
+Disconnecting From the Unit
+---------------------------
+
+To disconnect from the unit, the :func:`VNSDK::Sensor::Disconnect` method can be called, which also closes the *listening thread*.
+
+.. tab:: C#
+
+   .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+      :language: c#
+      :start-at: sensor.Disconnect();
+      :end-at: sensor.Disconnect();
+      :dedent: 12
+
+.. tab:: MATLAB
+
+   .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+      :language: matlab
+      :start-at: sensor.Disconnect();
+      :end-at: sensor.Disconnect();
+      :dedent: 4
+
+Accessing Registers
+===================
+All configuration settings and many measurements are stored in one of 256 registers, which are accessible via synchronous polling and synchronous writing
+
+.. The SDK contains the complete register definitions in :ref:`file_include_Interface_Registers.hpp`, each defined as a class with each register field a public class member.
+.. All of the register classes exist in the :ref:`namespace_VN__Registers` and a namespace for the register group. Alternatively, each register is aliased under the :ref:`namespace_VN__Registers__ById` by their register ID. For example, the ``Synchronization Control`` class can either be accessed as :class:`VNSDK::Registers::System::SyncControl` or :type:`VNSDK::Registers::ById::reg32`.
+
+Both measurement registers and configuration registers can be read, whereas only configuration registers can be written. This is accomplished best using the :func:`VNSDK::Sensor::ReadRegister` and :func:`VNSDK::Sensor::WriteRegister` methods, which are discussed in the following sections. 
+
+.. The ``ReadRegister`` and ``WriteRegister`` methods are calls which block upon reception of the unit's response, with a timeout length of :member:`VNSDK::Config::Sensor::commandSendTimeoutLength` (set in :ref:`file_include_Config.hpp`). If no response is received in time and retry is enabled, they will retry the number of :member:`VNSDK::Config::Sensor::commandSendRetriesAllowed` (set in :ref:`file_include_Config.hpp`). If all retries fail to receive a response, they will return ``Error::ResponseTimeout``. If the unit responds with a valid, non-VnError response within the timeout length, the fields of the passed ``Register`` object will be populated with the unit's response.
+
+.. warning:
+   .. TODO: Update to include links to register definitions
+
+The fields in each ``Register`` object will match the fields listed in the VectorNav unit's latest ICD, which can be downloaded directly from VectorNav's website.
+
+.. note::
+   The ``ReadRegister`` and ``WriteRegister`` methods are blocking calls. There is currently no mechanism for non-blocking calls.
+
+Reading Registers
+-----------------
+
+As discussed in :ref:`pages/KeyFunctionality:Accessing Registers`, the :func:`VNSDK::Sensor::ReadRegister` method is the preferred method to read registers. To do so, you must 
+
+   #. Create a ``Register`` object to be populated by the received response
+   #. Call the ``ReadRegister`` method
+   #. Access the received values in the original ``Register`` object
+
+
+.. tab:: C#
+
+   .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+      :language: c#
+      :start-at: VNSDK.Registers.Attitude.YawPitchRoll ypr = new VNSDK.Registers.Attitude.YawPitchRoll();
+      :end-at: $"Roll {ypr.roll}");
+      :dedent: 12
+
+.. tab:: MATLAB
+
+   .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+      :language: matlab
+      :start-at: ypr = Registers.Attitude.YawPitchRoll();
+      :end-at: ' Pitch: %f\t Roll: %f\n'],ypr.yaw, ypr.pitch, ypr.roll);
+
+
+Writing Registers
+-----------------
+
+As discussed in :ref:`pages/KeyFunctionality:Accessing Registers`, the :func:`VNSDK::Sensor::writeRegister` method is the preferred method to read registers. To do so, you must
+
+   #. Create a ``Register`` object
+   #. Populate the ``Register`` object with the desired values to configure the unit
+   #. Call the ``writeRegister`` method
+
+.. tab:: C#
+
+   .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+      :language: c#
+      :start-at: // Set ASCII messages to YPR
+      :end-at: sensor.WriteRegister(asyncOutputType);
+      :dedent: 12
+
+.. tab:: MATLAB
+
+   .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+      :language: matlab
+      :start-at: % Set Measurements to YPR
+      :end-at: sensor.WriteRegister(asyncDataOutputType);
+
+.. tip::
+   To ensure register values are not unintentionally changed, it may be preferred to first read a register, change only the desired parameter, and write the register back to the unit. 
+   .. This can be accomplished as follows:
+
+
+Reading Measurements
+====================
+By default, all asynchronous measurements (except *gnssSatInfo* and *gnssRawMeas*), whether sourced from ASCII or binary outputs, are made available as a :class:`VNSDK::CompositeData` object on the ``MeasurementQueue`` contained within the ``Sensor`` object once the packet is parsed.
+
+The Composite Data Object
+-------------------------
+A ``CompositeData`` object contains each measurement group (e.g. `Attitude`) as public members, each of which is a structure containing each measurement type (e.g. `Ypr`). Exactly one ``CompositeData`` object is populated for each measurement message, each of which contains a subset of the possible measurement types. Because a measurement message likely does not contain each enabled measurement, the measurement type members are each a `std::optional <https://en.cppreference.com/w/cpp/utility/optional>`_ of the underlying datatypes defined in the unit's `ICD <https://www.vectornav.com/resources/technical-documentation/interface-control-documents>`_. 
+.. For example, `accel` is documented in the ICD in the `Imu` measurement group and is a ``Vec3f``. As such, it can be accessed in a ``CompositeData`` object as: ADD EXAMPLE HERE
+
+.. note::
+   The ``CompositeData`` class does not contain the `Common` group. As such, any measurement types populated via a binary measurement in the `Common` group will show up in the underlying group. For example, a binary message which contains `ypr` from the `Common` group will be populated in the ``attitude`` member of a ``CompositeData`` object.
+
+How to Read a Measurement
+-------------------------
+
+#. Get a ``CompositeData`` object from the ``MeasurementQueue``.
+
+   This can be done in two ways:
+
+   * Use :func:`VNSDK::Sensor::GetNextMeasurement`, which will block until the set timeout. If there is already a ``CompositeData`` object on the queue when called, it will return that object without blocking.
+   * Use :func:`VNSDK::Sensor::GetMostRecentMeasurement`
+   
+   Both of these methods return a `std::optional <https://en.cppreference.com/w/cpp/utility/optional>`_, which means that you must check to ensure that the returned value is populated using the `has_value <https://en.cppreference.com/w/cpp/utility/optional/operator_bool>`_ method. 
+
+#. Validate that the measurement you want is in the :class:`VNSDK::CompositeData` object. This can be done in two ways:
+
+   * Use the :func:`VNSDK::CompositeData::matchesMessage` method
+      This method checks to see which message populated this particular composite data object, using an exact match. If a composite data object matches a particular header or message, each included measurement type is guaranteed to have a value, so you can safely call `value() <https://en.cppreference.com/w/cpp/utility/optional/value>`_.
+      
+      This approach is especially useful if you are sending measurements via multiple output registers at once, and would like to take different actions for each one.
+
+      .. As shown in the above example, 
+
+      The ``matchesMessage`` method can accept either a string literal in the case of ASCII messages, or the ``BinaryOutputRegister`` object we used earlier to configure the register in the case of a binary message.
+
+   * Use the `has_value <https://en.cppreference.com/w/cpp/utility/optional/operator_bool>`_ method on each measurement you're interested in.
+      Each measurement type of the :class:`VNSDK::CompositeData` object is a `std::optional <https://en.cppreference.com/w/cpp/utility/optional>`_, so you can directly check if the value has been set by using `has_value <https://en.cppreference.com/w/cpp/utility/optional/operator_bool>`_. 
+      This is most useful if you do not necessarily know or care from which message a particular measurement came, and would like to perform some action whenever a measurement is available.
+
+      .. To achieve a similar result, the Measurement Matches Message example could instead be written as: Add EXAMPLE HERE
+
+#. Access measurement value
+   Now that we know the measurement has a value, we can safely access the underlying measurement value. This can be done with the ``value`` call. 
+   .. as:
+
+Receiving Composite Data
+-------------------------
+
+.. tab:: C#
+
+   .. literalinclude:: ../../../cs/examples/GettingStarted/GettingStarted.cs
+      :language: c#
+      :start-at: while (s.Elapsed
+      :end-before: s.Stop();
+      :dedent: 12
+   
+.. tab:: MATLAB
+
+   .. literalinclude:: ../../../matlab/examples/GettingStarted/GettingStarted.m
+      :language: matlab
+      :start-at: while toc
+      :end-before: fprintf('Ascii
+
+Sending Commands
+================
+Each command able to be sent to the unit is available as a public method of the :class:`VNSDK::Sensor` class using blocking calls.
+
+To send a command, simply call the public method with the necessary parameters, if applicable. For example, to send a `Set Initial Heading` command, you can call
+
+.. tab:: C#
+
+   .. code-block:: C#
+
+      sensor.SetInitialHeading(45);
+
+.. tab:: MATLAB
+
+   .. code-block:: matlab
+
+      sensor.SetInitialHeading(45);
+
+
+Error Handling
+==============
+The .NET ``Sensor`` object throws exceptions when errors are encountered.
+
+.. tab:: C#
+
+   .. code-block:: C#
+
+      try
+      {
+            sensor.AutoConnect(port);
+      }
+      catch (VnException e)
+      { 
+            // Do something with the exception
+      }
+
+.. tab:: MATLAB
+
+   .. code-block:: matlab
+
+      try
+            sensor.AutoConnect(port_name);
+      catch e
+            e.message
+      end
+

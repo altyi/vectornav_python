@@ -1,0 +1,73 @@
+
+.. _program_listing_file_include_vectornav_HAL_Serial_Mbed.hpp:
+
+Program Listing for File Serial_Mbed.hpp
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_include_vectornav_HAL_Serial_Mbed.hpp>` (``include\vectornav\HAL\Serial_Mbed.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #ifndef VN_SERIAL_MBED_HPP_
+   #define VN_SERIAL_MBED_HPP_
+   
+   #define MBED_NO_GLOBAL_USING_DIRECTIVE 0  // disable mbed namespace
+   #include <array>
+   #include <cstdint>
+   
+   #include "Serial_Base.hpp"
+   #include "mbed.h"
+   #include "vectornav/Config.hpp"
+   #include "vectornav/HAL/Serial_Base.hpp"
+   #include "vectornav/TemplateLibrary/String.hpp"
+   
+   namespace VN
+   {
+   
+   class Serial : public Serial_Base
+   {
+   public:
+       using Serial_Base::Serial_Base;
+   
+       Error open([[maybe_unused]] const PortName& portName, const uint32_t baudRate) noexcept override final
+       {
+           _serial.set_baud(baudRate);
+           _baudRate = baudRate;
+           _isOpen = true;
+           return _flush() ? Error::UnexpectedSerialError : Error::None;
+       }
+   
+       void close() noexcept override {};
+   
+       Error changeBaudRate(const uint32_t baudRate) noexcept override final
+       {
+           _serial.set_baud(baudRate);
+           _baudRate = baudRate;
+           return Error::None;
+       }
+   
+       Error getData() noexcept override final
+       {
+           ssize_t bytesRead = _serial.read(_inputBuffer.data(), _numBytesToReadPerGetData);
+           if (bytesRead <= 0) { return Error::SerialReadFailed; }
+           return _byteBuffer.put(_inputBuffer.data(), bytesRead) ? Error::PrimaryBufferFull : Error::None;
+       }
+   
+       Error send(const AsciiMessage& message) noexcept override final
+       {
+           ssize_t bytesWritten = _serial.write(message.begin(), message.length());
+           return bytesWritten <= 0 ? Error::SerialWriteFailed : Error::None;
+       }
+   
+   private:
+       bool _flush() noexcept { return (_serial.sync() != 0); }
+   
+       mbed::BufferedSerial _serial{PinName::D45, PinName::D46};
+       std::array<uint8_t, _numBytesToReadPerGetData> _inputBuffer{};
+   };
+   
+   }  // namespace VN
+   
+   #endif  // VN_SERIAL_MBED_HPP_

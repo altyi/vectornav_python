@@ -1,0 +1,14 @@
+.. _exhale_function__linear_algebra_8hpp_1a3c7bdae233dcc8ca4bb56a4b1117d476:
+
+Template Function VN::Math::outer(const Matrix<m, 1, T>&, const Matrix<m, 1, T>&)
+=================================================================================
+
+- Defined in :ref:`file_plugins_Math_vectornav_LinearAlgebra.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Math::outer(const Matrix<m, 1, T>&, const Matrix<m, 1, T>&)
+   :project: VectorNav SDK

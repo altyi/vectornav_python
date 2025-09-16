@@ -1,0 +1,14 @@
+.. _exhale_variable__config_8hpp_1a1dbeb83688dcad3eb58d73c57e98a631:
+
+Variable VN::Config::PacketFinders::skippedReceivedByteBufferMaxPutLength
+=========================================================================
+
+- Defined in :ref:`file_include_vectornav_Config.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: VN::Config::PacketFinders::skippedReceivedByteBufferMaxPutLength
+   :project: VectorNav SDK

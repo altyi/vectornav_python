@@ -1,0 +1,14 @@
+.. _exhale_function__attitude_math_8hpp_1aa91cc2b05bdccf6293b51269e54a20b0:
+
+Function VN::Math::inverseQuat
+==============================
+
+- Defined in :ref:`file_plugins_Math_vectornav_AttitudeMath.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::Math::inverseQuat(const Quat&)
+   :project: VectorNav SDK

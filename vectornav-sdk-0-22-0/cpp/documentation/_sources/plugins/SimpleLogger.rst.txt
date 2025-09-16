@@ -1,0 +1,69 @@
+.. _cppSimpleLoggerPage:
+
+Simple Logger
+#############
+
+The Simple Logger plugin is a simple and lightweight plugin that allows users to easily log all bytes received from a VectorNav unit to a binary file without the need to parse the packets.
+This plugin can be used in conjunction with the Data Export plugin, which allows users to export the binary file that was logged into a *CSV*, *TXT*, or *RINEX* file. Information on how to export a binary file onced it has been logged with the Simple Logger plugin can be found on the :ref:`cppDataExportPage` page.
+
+Usage
+=====
+As demonstrated in the Simple Logger example, to use the Simple Logger plugin, it is first necessary to create a :class:`VN::Sensor` object and connect to the VectorNav unit, such as by using the :func:`VN::Sensor::autoConnect` method.
+
+.. code-block:: cpp
+
+    Sensor sensor;
+    Error latestError = sensor.autoConnect(portName);
+
+Next, the resources required for data logging need to be set up. The :class:`VN::SimpleLogger` object requires a :class:`VN::ByteBuffer` object as well as the path of the desired log file. The :class:`VN::ByteBuffer` object is a user-defined buffer where bytes will temporarily be stored before they are written to the log file.
+
+.. code-block:: cpp
+
+    ByteBuffer bufferToLog{1024 * 3};
+    SimpleLogger logger{bufferToLog, filePath};
+
+.. warning::
+    If the buffer overruns due to insufficient size, data will be missed. Ensure the buffer is appropriately sized based on the expected data throughput from the VectorNav unit to avoid losing any data while logging.
+
+Once the :class:`VN::ByteBuffer` and :class:`VN::SimpleLogger` objects are instatiated, register the :class:`VN::ByteBuffer` object with the :class:`VN::Sensor` object as follows:
+
+.. code-block:: cpp
+
+    sensor.registerReceivedByteBuffer(&bufferToLog);
+
+..  note::
+    When using the Simple Logger plugin, the logger must be started and stopped manually using the :func:`VN::SimpleLogger::start` and :func:`VN::SimpleLogger::stop` methods.
+
+To create the log file and start logging data from the VectorNav unit, call the :func:`VN::SimpleLogger::start` method. It it important to ensure that this call is successful, otherwise the logger was not able to create the file. 
+
+.. code-block:: cpp
+
+    if (logger.start())
+    {
+        std::cout << "Error: Failed to write to file." << std::endl;
+        return 1;
+    }
+
+..  note::
+    This call to start data logging spawns a separate thread dedicated to writing data to the file. This ensures that file write operations do not block the main thread, allowing it to continue processing efficiently.
+
+While logging, the user should monitor for any asynchronous errors, such as buffer overruns, using the :func:`VN::Sensor::getAsynchronousError` method. Any buffer overruns indicate that data has been dropped from the sensor during logging.
+
+.. literalinclude:: ../../examples/SimpleLogger/main.cpp
+   :language: c++
+   :start-at: asyncError
+   :end-before: logger.stop()
+   :dedent: 4
+
+Stopping the logger is just as easy -- simply call :func:`VN::SimpleLogger::stop` method and deregister the :class:`VN::ByteBuffer` object. 
+
+.. code-block:: cpp
+    
+    logger.stop()
+    sensor.deregisterReceivedByteBuffer();
+    sensor.disconnect();
+
+API
+===
+
+:class:`VN::SimpleLogger`

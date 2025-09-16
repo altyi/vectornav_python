@@ -1,0 +1,14 @@
+.. _exhale_function__register_scan_8hpp_1a893f172e3b24ae10cf4fea6e896f1d19:
+
+Template Function VN::RegisterScan::_saveConfigurationRegister
+==============================================================
+
+- Defined in :ref:`file_plugins_RegisterScan_include_vectornav_RegisterScan.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::_saveConfigurationRegister(Sensor&, ConfigWriter<T>&, uint8_t)
+   :project: VectorNav SDK

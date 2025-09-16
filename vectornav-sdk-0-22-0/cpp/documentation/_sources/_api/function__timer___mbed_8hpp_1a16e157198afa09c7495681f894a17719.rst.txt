@@ -1,0 +1,14 @@
+.. _exhale_function__timer___mbed_8hpp_1a16e157198afa09c7495681f894a17719:
+
+Function VN::now
+================
+
+- Defined in :ref:`file_include_vectornav_HAL_Timer_Mbed.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::now()
+   :project: VectorNav SDK

@@ -1,0 +1,14 @@
+.. _exhale_function__config_writer_8cpp_1aaa4ec0905c79a25aacf6db389b37bf86:
+
+Function VN::RegisterScan::augmentMessage
+=========================================
+
+- Defined in :ref:`file_plugins_RegisterScan_src_ConfigWriter.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: VN::RegisterScan::augmentMessage(AsciiMessage&, const AsciiMessage&)
+   :project: VectorNav SDK

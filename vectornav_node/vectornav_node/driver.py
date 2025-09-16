@@ -24,7 +24,9 @@ class VectorNavNode(Node):
         self.declare_parameter('frame_id', 'vectornav')
         self.declare_parameter('global_frame_id', 'NED') # 'NED' or 'ENU'
         self.declare_parameter('output_rate', 20)
-        self.declare_parameter('gnss_baseline', (1.0, 0.0, 0.0, 0.0254, 0.0254, 0.0254))
+        self.declare_parameter('gnss_antenna_offset', (1.0, 0.0, 0.0, 0.0254, 0.0254, 0.0254))
+        self.declare_parameter('gnss_compass_baseline', (1.0, 0.0, 0.0, 0.0254, 0.0254, 0.0254))
+
         self.declare_parameter('save_settings_on_startup', True)
         self.declare_parameter('settings_filename', "vectornav_settings.yaml")
         self.declare_parameter('publish_data', {
@@ -38,7 +40,8 @@ class VectorNavNode(Node):
         self.frame_id = self.get_parameter('frame_id').value
         self.global_frame_id = self.get_parameter('global_frame_id').value.upper()
         self.output_rate = self.get_parameter('output_rate').value
-        self.gnss_baseline = self.get_parameter('gnss_baseline').value()
+        self.gnss_antenna_offset = self.get_parameter('gnss_antenna_offset').value()
+        self.gnss_compass_baseline = self.get_parameter('gnss_compass_baseline').value()
         self.save_settings = self.get_parameter('save_settings_on_startup').value
         self.settings_filename = self.get_parameter('settings_filename').value
         self.publish_flags = self.get_parameter('publish_data').value
@@ -82,63 +85,99 @@ class VectorNavNode(Node):
             self.pubs['gnss_compass'] = self.create_publisher(Float64, 'gnss/compass_heading', qos_profile)
         
         # --- Sensor Connection ---
-        self.vs = Sensor()
         self.connect_to_sensor()
 
-        # --- Sensor Configuration ---
-        self.configure_registers()
-        self.configure_binary_output()
+        # # --- Sensor Configuration ---
+        # self.configure_registers()
+        # self.configure_binary_output()
 
-        # --- Save register settings if enabled ---
-        if self.save_settings:
-            self.save_register_settings()
+        # # --- Save register settings if enabled ---
+        # if self.save_settings:
+        #     self.save_register_settings()
 
 
-        # --- Timer for Data Polling ---
-        timer_period = 1.0 / (self.output_rate * 2.0)
-        self.timer = self.create_timer(timer_period, self.poll_data)
-    
-    def configure_registers(self):
-        # --- Coordiante Transform ---
-        if self.global_frame_id == 'ENU':
-            self.set_ned_to_enu_coordinate_tramsform()
+        # # --- Timer for Data Polling ---
+        # timer_period = 1.0 / (self.output_rate * 2.0)
+        # self.timer = self.create_timer(timer_period, self.poll_data)
+
+    def baud_rate_table(self, baudrate: int) -> Sensor.BaudRate:
+        """
+        Converts an integer baud rate to its corresponding Sensor.BaudRate enum member.
+
+        This function assumes Sensor.BaudRate is an Enum imported from a library.
+
+        Args:
+            baudrate: The integer value of the baud rate (e.g., 9600).
+
+        Returns:
+            The matching Sensor.BaudRate enum member.
         
-        self.set_gnss_baseline()
-
-        # send a write setting command
+        Raises:
+            ValueError: If the provided baud rate is not supported by the Enum.
+        """
         try:
-            self.vs.writesettings()
-        except VnError as e:
-            self.get_logger().error(f"Failed to write to register 26 for coordiante transform: {e}")
-        # send a reset command
-        try:
-            self.vs.reset()
-        except VnError as e:
-            self.get_logger().error(f"Failed to reset for coordiante transform: {e}")
+            # The most Pythonic way: The Enum itself is a lookup table.
+            # Call the Enum with the integer value to get the corresponding member.
+            return Sensor.BaudRate(baudrate)
+        except ValueError:
+            # This block runs if the integer baudrate does not match any enum member's value.
+            # We construct a helpful error message listing all supported rates.
+            supported_rates = ", ".join(str(b.value) for b in Sensor.BaudRate)
+            raise ValueError(
+                f"Unsupported baud rate: {baudrate}. "
+                f"Supported rates are: {supported_rates}"
+            )  
 
-    def set_ned_to_enu_coordinate_tramsform(self):
-        ned2enu_rot = Registers.IMU.RefFrameRot()
-        ned2enu_rot.rfr00 = 0.0
-        ned2enu_rot.rfr01 = 1.0
-        ned2enu_rot.rfr02 = 0.0
-        ned2enu_rot.rfr10 = 1.0
-        ned2enu_rot.rfr11 = 0.0
-        ned2enu_rot.rfr12 = 0.0
-        ned2enu_rot.rfr20 = 0.0
-        ned2enu_rot.rfr21 = 0.0
-        ned2enu_rot.rfr22 = -1.0
-        # write to register id 26
-        self.vs.writeRegister(ned2enu_rot)
+    def connect_to_sensor(self):
+        """ Connects to the VectorNav sensor. """
+        self.vs = Sensor()
+        self.get_logger().info(f"Connecting to sensor at {self.port} with baudrate {self.baudrate}...")
+        try:
+            self.vs.connect(self.port, self.baud_rate_table(self.baudrate))
+            if not self.vs.verifySensorConnectivity():
+                self.get_logger().error("Sensor connectivity check failed.")
+                raise ConnectionError("Sensor connectivity failed")
+            self.connected_port = self.vs.connectedPortName()
+            self.connected_baud = self.vs.connectedBaudRate()
+            self.get_logger().info(f"Successfully connected to the VectorNav sensor at port: {self.connected_port} with baud rate: {self.connected_baud}.")
+            
+        except Exception as e:
+            self.get_logger().fatal(f"Could not connect to the sensor: {e}")
+            self.destroy_node()
+            rclpy.shutdown()
+
+    # def _set_register(self):
+    #     # send a write setting command
+    #     try:
+    #         self.get_logger().info(f"writing settings to register ...")
+    #         self.vs.writesettings()
+    #     except VnError as e:
+    #         self.get_logger().error(f"Failed to write to register 26 for coordiante transform: {e}")
+    #     # send a reset command
+    #     try:
+    #         self.get_logger().info(f"resetting device ...")
+    #         self.vs.reset()
+    #     except VnError as e:
+    #         self.get_logger().error(f"Failed to reset for coordiante transform: {e}")
     
-    def set_gnss_baseline(self):
-        gnss_baseline = Registers.GNSSCompass.GnssCompassBaseline()
-        gnss_baseline.positionX = self.gnss_baseline[0]
-        gnss_baseline.positionY = self.gnss_baseline[1]
-        gnss_baseline.positionZ = self.gnss_baseline[2]
-        gnss_baseline.uncertaintyX = self.gnss_baseline[3]
-        gnss_baseline.uncertaintyY = self.gnss_baseline[4]
-        gnss_baseline.uncertaintyZ = self.gnss_baseline[5]
-        self.vs.writeRegister(gnss_baseline)
+    # def configure_registers(self):
+    #     self.set_gnss_baseline()
+    
+    # # --- Configuration Register 57 & 93 ---
+    # def set_gnss_baseline(self):
+    #     gnss_antenna_offset = Registers.GNSS.GnssAOffset()
+    #     gnss_antenna_offset.positionX = self.gnss_antenna_offset[0]
+    #     gnss_antenna_offset.positionY = self.gnss_antenna_offset[1]
+    #     gnss_antenna_offset.positionZ = self.gnss_antenna_offset[2]
+
+    #     gnss_compass_baseline = Registers.GNSSCompass.GnssCompassBaseline()
+    #     gnss_compass_baseline.positionX = self.gnss_compass_baseline[0]
+    #     gnss_compass_baseline.positionY = self.gnss_compass_baseline[1]
+    #     gnss_compass_baseline.positionZ = self.gnss_compass_baseline[2]
+    #     gnss_compass_baseline.uncertaintyX = self.gnss_compass_baseline[3]
+    #     gnss_compass_baseline.uncertaintyY = self.gnss_compass_baseline[4]
+    #     gnss_compass_baseline.uncertaintyZ = self.gnss_compass_baseline[5]
+    #     self.vs.writeRegister(gnss_compass_baseline)
 
 
         
