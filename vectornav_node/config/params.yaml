@@ -26,18 +26,3 @@ vectornav_node:
     # Save all configuration registers to a YAML file upon node startup.
     save_settings_on_startup: true
     settings_filename: "vectornav_settings.yaml"
-
-    # --- Topic Publishing Control ---
-    # Select which topics to publish.
-    publish_data:
-      imu: true
-      mag: true
-      temp: true
-      pres: true
-      gps_fix: true
-      gps_vel: true
-      odometry: true
-      attitude_quat: true
-      attitude_ypr: true
-      gnss_compass: true
-      diagnostics: true
