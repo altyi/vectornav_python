@@ -446,7 +446,10 @@ class VectorNavNode(Node):
         msg.status.status = fix_map.get(cd.gnss.gnss1Fix, NavSatStatus.STATUS_NO_FIX)
         msg.status.service = NavSatStatus.SERVICE_GPS
         
-        unc_n, unc_e, unc_d = cd.gnss.gnss1PosUncertainty.x, cd.gnss.gnss1PosUncertainty.y, cd.gnss.gnss1PosUncertainty.z
+        unc_n = cd.gnss.gnss1PosUncertainty[0]
+        unc_e = cd.gnss.gnss1PosUncertainty[1]
+        unc_d = cd.gnss.gnss1PosUncertainty[2]
+
         msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
         msg.position_covariance[0] = unc_e**2
         msg.position_covariance[4] = unc_n**2
