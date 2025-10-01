@@ -9,8 +9,8 @@ vectornav_node:
     # E.g., for 100Hz, divisor will be 4. For 50Hz, divisor will be 8.
     output_rate: 20
     # --- GNSS Antenna Configuration ---
-    gnss_antenna_offset: [1.0, 0.0, 0.0]
-    gnss_compass_baseline: [1.0, 0.0, 0.0, 0.0256, 0.0256, 0.0256]
+    gnss_antenna_offset: [0.46,0.11,-0.584]
+    gnss_compass_baseline: [-0.97, 0.0, 0.0, 0.0256, 0.0256, 0.0256]
 
     # --- Frame IDs ---
     frame_id: "vn300"       # Base frame for the sensor (body frame)
@@ -18,4 +18,4 @@ vectornav_node:
     # --- Register Settings ---
     # Save all configuration registers to a xml file upon node startup.
     save_settings_on_startup: true
-    settings_filename: "vectornav_settings.xml"
+    settings_filename: "/home/soslab/vn_test_save/vectornav_settings.xml"

@@ -55,43 +55,75 @@ def main(argv):
     vs.autoConnect(sensorPortName)
     print(f"Connected to {sensorPortName} at {vs.connectedBaudRate()}")
 
-    #### 2. PRINTING THE SENSOR MODEL NUMBER
-    # Create an empty register object of the necessary type, where the data member will be populated when the sensor responds to our "read register" request
-    modelRegister = Registers.Model()
+    # #### 2. PRINTING THE SENSOR MODEL NUMBER
+    # # Create an empty register object of the necessary type, where the data member will be populated when the sensor responds to our "read register" request
+    # modelRegister = Registers.Model()
 
-    vs.readRegister(modelRegister)
-    print(f"Sensor Model Number: {modelRegister.model}")
+    # vs.readRegister(modelRegister)
+    # print(f"Sensor Model Number: {modelRegister.model}")
 
-    #### 3. PRINTING THE YPR    
-    yprRegister = Registers.YawPitchRoll()
+    # #### 3. PRINTING THE YPR    
+    # yprRegister = Registers.YawPitchRoll()
     
-    vs.readRegister(yprRegister)
-    print(f"Current Reading: Yaw - {yprRegister.yaw}, Pitch - {yprRegister.pitch}, Roll - {yprRegister.roll} ")
+    # vs.readRegister(yprRegister)
+    # print(f"Current Reading: Yaw - {yprRegister.yaw}, Pitch - {yprRegister.pitch}, Roll - {yprRegister.roll} ")
 
-    #### 4. CONFIGURING ADOR AND AODF TO YPR @ 2Hz
-    asyncDataOutputType = Registers.AsyncOutputType()
-    asyncDataOutputType.ador = Registers.AsyncOutputType.Ador.YPR
-    asyncDataOutputType.serialPort = Registers.AsyncOutputType.SerialPort.Serial1
+    # #### 4. CONFIGURING ADOR AND AODF TO YPR @ 2Hz
+    # asyncDataOutputType = Registers.AsyncOutputType()
+    # asyncDataOutputType.ador = Registers.AsyncOutputType.Ador.YPR
+    # asyncDataOutputType.serialPort = Registers.AsyncOutputType.SerialPort.Serial1
 
-    vs.writeRegister(asyncDataOutputType)
-    print(f"ADOR Configured")
+    # vs.writeRegister(asyncDataOutputType)
+    # print(f"ADOR Configured")
     
-    asyncDataOutputFreq= Registers.AsyncOutputFreq()
-    asyncDataOutputFreq.adof = Registers.AsyncOutputFreq.Adof.Rate2Hz
-    asyncDataOutputFreq.serialPort = Registers.AsyncOutputFreq.SerialPort.Serial1
+    # asyncDataOutputFreq= Registers.AsyncOutputFreq()
+    # asyncDataOutputFreq.adof = Registers.AsyncOutputFreq.Adof.Rate2Hz
+    # asyncDataOutputFreq.serialPort = Registers.AsyncOutputFreq.SerialPort.Serial1
 
-    vs.writeRegister(asyncDataOutputFreq)
-    print("ADOF Configured")
+    # vs.writeRegister(asyncDataOutputFreq)
+    # print("ADOF Configured")
 
     #### 5. CONFIGURING THE FIRST BINARY OUTPUT to 2 HZ (1HZ if VN-300)
     binaryOutput1Register = Registers.BinaryOutput1()
-    binaryOutput1Register.rateDivisor = 400
+    binaryOutput1Register.rateDivisor = 20
     binaryOutput1Register.asyncMode.serial1 = 1
     binaryOutput1Register.asyncMode.serial2 = 1
-    binaryOutput1Register.common.timeStartup = 1
-    binaryOutput1Register.common.accel = 1
-    binaryOutput1Register.common.angularRate = 1
-    binaryOutput1Register.common.imu = 12
+    # binaryOutput1Register.common.timeStartup = 1
+    # binaryOutput1Register.common.accel = 1
+    # binaryOutput1Register.common.angularRate = 1
+    # binaryOutput1Register.common.imu = 12
+
+    # Enable specific register output in composite data
+    # --- Time ---
+    binaryOutput1Register.time.timeStartup = 1          # [vnpy.Time] The system time since startup measured in nano seconds
+    # --- IMU ---
+    binaryOutput1Register.imu.imuStatus = 1             # [vnpy.ImuStatus]
+    binaryOutput1Register.imu.temperature = 1           # [float]
+    binaryOutput1Register.imu.pressure = 1              # [float]
+    binaryOutput1Register.imu.mag = 1                   # [vnpy.Vec3f]
+    binaryOutput1Register.imu.accel = 1                 # [vnpy.Vec3f]
+    binaryOutput1Register.imu.angularRate = 1           # [vnpy.Vec3f]
+    # --- GNSS ---
+    binaryOutput1Register.gnss.gnss1TimeUtc = 1         # [vnpy.GnssTimeUtc] The current UTC time
+    binaryOutput1Register.gnss.gnss1NumSats = 1         # [uint8_t] The number of tracked GNSS satellites
+    binaryOutput1Register.gnss.gnss1Fix = 1             # [uint8_t] The current GNSS fix type
+    binaryOutput1Register.gnss.gnss1PosLla = 1          # [vnpy.Lla] The current GNSS position measurement given as the geodetic latitude, longitude and altitude
+    binaryOutput1Register.gnss.gnss1PosUncertainty = 1  # [vnpy.Vec3f] The current GNSS position uncertainty in NED
+    binaryOutput1Register.gnss.gnss1VelNed = 1          # [vnpy.Vec3f] The current GNSS velocity in the North East Down (NED) reference frame
+    binaryOutput1Register.gnss.gnss1VelUncertainty = 1  # [float] The current GNSS velocity uncertainty
+    binaryOutput1Register.gnss.gnss1Dop = 1             # [vnpy.GnssDop] Dilution of precision
+    binaryOutput1Register.gnss.gnss1SatInfo = 1         # [vnpy.GnssSatInfo] Information and measurements pertaining to each GNSS satellite in view
+    # --- Attitude ---
+    binaryOutput1Register.attitude.quaternion = 1       # [vnpy.Quat] NED frame
+    binaryOutput1Register.attitude.yprU = 1             # [float] The estimated uncertainty (1 Sigma) in the current attitude estimate.
+    # --- INS ---
+    binaryOutput1Register.ins.insStatus = 1             # [vnpy.InsStatus]
+    binaryOutput1Register.ins.posLla = 1                # [vnpy.Lla] The estimated position
+    binaryOutput1Register.ins.velBody = 1               # [vnpy.Vec3f] The estimated velocity in the body-frame
+    binaryOutput1Register.ins.velNed = 1                # [vnpy.Vec3f] The estimated velocity in the NED-frame
+    binaryOutput1Register.ins.posU = 1                  # [float] The estimated uncertainty (1 Sigma) in the current position estimate
+    binaryOutput1Register.ins.velU = 1                  # [float] The estimated uncertainty (1 Sigma) in the current velocity estimate
+
 
     vs.writeRegister(binaryOutput1Register)
     print("Binary output 1 message configured")
@@ -107,10 +139,12 @@ def main(argv):
             print(f"\tTime: {compositeData.time.timeStartup.nanoseconds()}")
             accel = compositeData.imu.accel
             print(f"\tAccel X: {accel[0]}\n\tAccel Y: {accel[1]}\n\tAccel Z: {accel[2]}")
+            accel = compositeData.imu.accel
+            print(f"\tAccel X: {accel[0]}\n\tAccel Y: {accel[1]}\n\tAccel Z: {accel[2]}")
         elif compositeData.matchesMessage("VNYPR"):
-            print("Found Ascii ypr measurement.")
+            # print("Found Ascii ypr measurement.")
             ypr = compositeData.attitude.ypr
-            print(f"\tYaw: {ypr.yaw}\n\tPitch: {ypr.pitch}\n\tRoll: {ypr.roll}")
+            # print(f"\tYaw: {ypr.yaw}\n\tPitch: {ypr.pitch}\n\tRoll: {ypr.roll}")
         else:
             print("Unrecognized asynchronous message received")
 

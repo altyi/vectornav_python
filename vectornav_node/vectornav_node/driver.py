@@ -11,7 +11,7 @@ from sensor_msgs.msg import Imu, MagneticField, Temperature, FluidPressure, NavS
 from geometry_msgs.msg import TwistWithCovarianceStamped, PoseWithCovarianceStamped
 from builtin_interfaces.msg import Time
 
-from vectornav import Sensor, Registers, VnTypes, Plugins, VnError
+from vectornav import Sensor, Registers, Plugins
 
 # ==============================================================================
 # The Configuration Class
@@ -76,13 +76,13 @@ class VectorNavSensor:
     def configure_sensor(self):
         """Write to Configuration Registers"""
         # Configure gnss baselines
-        gnss_antenna_offset = Registers.GNSS.GnssAOffset()
+        gnss_antenna_offset = Registers.GnssAOffset()
         gnss_antenna_offset.positionX = self.config.gnss_antenna_offset[0]
         gnss_antenna_offset.positionY = self.config.gnss_antenna_offset[1]
         gnss_antenna_offset.positionZ = self.config.gnss_antenna_offset[2]
         self.vs.writeRegister(gnss_antenna_offset)
 
-        gnss_compass_baseline = Registers.GNSSCompass.GnssCompassBaseline()
+        gnss_compass_baseline = Registers.GnssCompassBaseline()
         gnss_compass_baseline.positionX = self.config.gnss_compass_baseline[0]
         gnss_compass_baseline.positionY = self.config.gnss_compass_baseline[1]
         gnss_compass_baseline.positionZ = self.config.gnss_compass_baseline[2]
@@ -90,6 +90,8 @@ class VectorNavSensor:
         gnss_compass_baseline.uncertaintyY = self.config.gnss_compass_baseline[4]
         gnss_compass_baseline.uncertaintyZ = self.config.gnss_compass_baseline[5]
         self.vs.writeRegister(gnss_compass_baseline)
+
+        self.vs.reset()
 
         # Turn off Async Ascii Output
         asyncDataOutputType = Registers.AsyncOutputType()
@@ -124,7 +126,7 @@ class VectorNavSensor:
         self.binaryOutput1Register.gnss.gnss1SatInfo = 1         # [vnpy.GnssSatInfo] Information and measurements pertaining to each GNSS satellite in view
         # --- Attitude ---
         self.binaryOutput1Register.attitude.quaternion = 1       # [vnpy.Quat] NED frame
-        self.binaryOutput1Register.attitude.attU = 1             # [float] The estimated uncertainty (1 Sigma) in the current attitude estimate.
+        self.binaryOutput1Register.attitude.yprU = 1             # [float] The estimated uncertainty (1 Sigma) in the current attitude estimate.
         # --- INS ---
         self.binaryOutput1Register.ins.insStatus = 1             # [vnpy.InsStatus]
         self.binaryOutput1Register.ins.posLla = 1                # [vnpy.Lla] The estimated position
@@ -135,7 +137,6 @@ class VectorNavSensor:
 
         # Write and reset
         self.vs.writeRegister(self.binaryOutput1Register)
-        self.vs.reset()
         self.logger().info("Configured Binary Outputs")
 
     def save_sensor_settings(self):
@@ -228,7 +229,7 @@ class VectorNavNode(Node):
 
     def packet_handling(self):
         while self._thread_running and rclpy.ok():
-            compositeData = self.vn_sensor.vs.getNextMeasurement(block=True)
+            compositeData = self.vn_sensor.vs.getNextMeasurement(True)
             if compositeData is None:
                 continue
             if compositeData.matchesMessage(self.vn_sensor.binaryOutput1Register):
@@ -237,8 +238,9 @@ class VectorNavNode(Node):
 
                 # -- Time --
                 startup_time = Time()
-                startup_time.sec = int(compositeData.time.timeStartup / 1e9)
-                startup_time.nanosec = int(compositeData.time.timeStartup % 1e9)
+                vectornav_time_startup = float(compositeData.time.timeStartup.nanoseconds())
+                startup_time.sec = int(vectornav_time_startup / 1e9)
+                startup_time.nanosec = int(vectornav_time_startup % 1e9)
                 self.startup_time_publisher.publish(startup_time)
 
                 # -- Temp & Pressure & MagneticField --
@@ -272,15 +274,19 @@ class VectorNavNode(Node):
                 imu_msg.linear_acceleration.x = compositeData.imu.accel[0]
                 imu_msg.linear_acceleration.y = compositeData.imu.accel[1]
                 imu_msg.linear_acceleration.z = compositeData.imu.accel[2]
-                imu_msg.orientation.x = compositeData.attitude.quaternion[0]
-                imu_msg.orientation.y = compositeData.attitude.quaternion[1]
-                imu_msg.orientation.z = compositeData.attitude.quaternion[2]
-                imu_msg.orientation.w = compositeData.attitude.quaternion[3]
+                imu_msg.orientation.x = compositeData.attitude.quaternion.vector[0]
+                imu_msg.orientation.y = compositeData.attitude.quaternion.vector[1]
+                imu_msg.orientation.z = compositeData.attitude.quaternion.vector[2]
+                imu_msg.orientation.w = compositeData.attitude.quaternion.scalar
                 
-                att_unc_rad_sq = compositeData.attitude.attU**2
-                imu_msg.orientation_covariance[0] = att_unc_rad_sq
-                imu_msg.orientation_covariance[4] = att_unc_rad_sq
-                imu_msg.orientation_covariance[8] = att_unc_rad_sq
+                y_unc_rad_sq = compositeData.attitude.yprU[0]**2
+                p_unc_rad_sq = compositeData.attitude.yprU[1]**2
+                r_unc_rad_sq = compositeData.attitude.yprU[2]**2
+                
+
+                imu_msg.orientation_covariance[0] = r_unc_rad_sq
+                imu_msg.orientation_covariance[4] = p_unc_rad_sq
+                imu_msg.orientation_covariance[8] = y_unc_rad_sq
                 self.imu_publisher.publish(imu_msg)
 
                 # -- GNSS --
@@ -336,14 +342,14 @@ class VectorNavNode(Node):
                 orientation_msg = PoseWithCovarianceStamped()
                 orientation_msg.header.stamp = ros_timestamp
                 orientation_msg.header.frame_id = self.ned_fram_id
-                orientation_msg.pose.pose.orientation.x = compositeData.attitude.quaternion[0]
-                orientation_msg.pose.pose.orientation.y = compositeData.attitude.quaternion[1]
-                orientation_msg.pose.pose.orientation.z = compositeData.attitude.quaternion[2]
-                orientation_msg.pose.pose.orientation.w = compositeData.attitude.quaternion[3]
+                orientation_msg.pose.pose.orientation.x = compositeData.attitude.quaternion.vector[0]
+                orientation_msg.pose.pose.orientation.y = compositeData.attitude.quaternion.vector[1]
+                orientation_msg.pose.pose.orientation.z = compositeData.attitude.quaternion.vector[2]
+                orientation_msg.pose.pose.orientation.w = compositeData.attitude.quaternion.scalar
                 # Populate orientation covariance in the 6x6 pose covariance matrix
-                orientation_msg.pose.covariance[21] = att_unc_rad_sq # Roll variance
-                orientation_msg.pose.covariance[28] = att_unc_rad_sq # Pitch variance
-                orientation_msg.pose.covariance[35] = att_unc_rad_sq # Yaw variance
+                orientation_msg.pose.covariance[21] = r_unc_rad_sq # Roll variance
+                orientation_msg.pose.covariance[28] = p_unc_rad_sq # Pitch variance
+                orientation_msg.pose.covariance[35] = y_unc_rad_sq # Yaw variance
                 self.orientation_ned_publisher.publish(orientation_msg)
 
 def main():
