@@ -3,26 +3,19 @@ vectornav_node:
     # --- Sensor Connection ---
     port: "/dev/ttyUSB0"
     baudrate: 115200
-
-    # --- Frame IDs ---
-    frame_id: "vectornav"       # Base frame for the sensor (body frame)
-    # The global reference frame. This affects the frame_id and data orientation
-    # for topics like /odom and /gps/vel.
-    # Options: "NED" (North-East-Down) or "ENU" (East-North-Up).
-    # ROS conventions recommend "ENU".
-    global_frame_id: "ENU"
-
     # --- Data Configuration ---
     # Desired data output rate (Hz). This is used to calculate the 'rate_divisor'.
     # The actual rate is (IMU Rate / rate_divisor). Assuming IMU rate of 400Hz.
     # E.g., for 100Hz, divisor will be 4. For 50Hz, divisor will be 8.
     output_rate: 20
+    # --- GNSS Antenna Configuration ---
+    gnss_antenna_offset: [1.0, 0.0, 0.0]
+    gnss_compass_baseline: [1.0, 0.0, 0.0, 0.0256, 0.0256, 0.0256]
 
-    # Configure sensor to use high-rate binary output. Recommended.
-    # If false, node will rely on sensor's pre-configured async output.
-    use_binary_output: true
-    
+    # --- Frame IDs ---
+    frame_id: "vn300"       # Base frame for the sensor (body frame)
+
     # --- Register Settings ---
-    # Save all configuration registers to a YAML file upon node startup.
+    # Save all configuration registers to a xml file upon node startup.
     save_settings_on_startup: true
-    settings_filename: "vectornav_settings.yaml"
+    settings_filename: "vectornav_settings.xml"

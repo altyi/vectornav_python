@@ -9,7 +9,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Imu, MagneticField, Temperature, FluidPressure, NavSatFix, NavSatStatus
 # from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TwistWithCovarianceStamped, PoseWithCovarianceStamped
-from std_msgs.msg import Float32, Time
+from builtin_interfaces.msg import Time
 
 from vectornav import Sensor, Registers, VnTypes, Plugins, VnError
 
@@ -25,6 +25,8 @@ class VectorNavConfig:
     gnss_antenna_offset: List[float]
     gnss_compass_baseline: List[float]
     frame_id: str
+    save_settings_on_startup: bool
+    settings_filename: str
 
 # ==============================================================================
 # The VectorNav Sensor Hardware Class
@@ -135,7 +137,25 @@ class VectorNavSensor:
         self.vs.writeRegister(self.binaryOutput1Register)
         self.vs.reset()
         self.logger().info("Configured Binary Outputs")
-    
+
+    def save_sensor_settings(self):
+        """Saves the sensor's non-default settings to a file if configured to do so."""
+        if self.config.save_settings_on_startup:
+            self.logger().info(f"Saving non-default sensor settings to {self.config.settings_filename}...")
+            try:
+                # Based on the filename extension, determine the writer type.
+                # For this implementation, we'll primarily support XML as per the params file.
+                if self.config.settings_filename.endswith(".xml"):
+                    configWriter = Plugins.XmlConfigWriter(self.vs, self.config.settings_filename)
+                else:
+                    # Default to ASCII if not XML.
+                    configWriter = Plugins.AsciiConfigWriter(self.config.settings_filename)
+                
+                Plugins.saveNonDefaultConfiguration(self.vs, configWriter)
+                self.logger().info(f"Successfully saved sensor settings to {self.config.settings_filename}.")
+            except Exception as e:
+                self.logger().error(f"Failed to save sensor settings: {e}")
+
 # ==============================================================================
 # The ROS 2 Node Class
 # ==============================================================================
@@ -147,20 +167,24 @@ class VectorNavNode(Node):
             namespace='',
             parameters=[
                 ('port', '/dev/ttyUSB0'),
-                ('baudrate', '115200'),
-                ('output_rate', '20'),
+                ('baudrate', 115200),
+                ('output_rate', 20),
                 ('gnss_antenna_offset', [1.0, 0.0, 0.0]),
                 ('gnss_compass_baseline', [1.0, 0.0, 0.0, 0.0256, 0.0256, 0.0256]),
-                ('frame_id', 'vn300')
+                ('frame_id', 'vn300'),
+                ('save_settings_on_startup', True),
+                ('settings_filename', 'vectornav_settings.xml')
             ]
         )
         self.vn_config = VectorNavConfig(
             port=self.get_parameter('port').value,
-            baudrate=int(self.get_parameter('baudrate').value),
-            output_rate=int(self.get_parameter('output_rate').value),
+            baudrate=self.get_parameter('baudrate').value,
+            output_rate=self.get_parameter('output_rate').value,
             gnss_antenna_offset=self.get_parameter('gnss_antenna_offset').value,
             gnss_compass_baseline=self.get_parameter('gnss_compass_baseline').value,
-            frame_id=self.get_parameter('frame_id').value
+            frame_id=self.get_parameter('frame_id').value,
+            save_settings_on_startup=self.get_parameter('save_settings_on_startup').value,
+            settings_filename=self.get_parameter('settings_filename').value
         )
         self.ned_fram_id = 'vectornav_ned'
 
@@ -168,6 +192,7 @@ class VectorNavNode(Node):
         self.vn_sensor = VectorNavSensor(config=self.vn_config, logger=self.get_logger)
         self.vn_sensor.connect_to_sensor()
         self.vn_sensor.configure_sensor()
+        self.vn_sensor.save_sensor_settings()
 
         # --- Publisher ---
         self.setup_publishers()
@@ -176,6 +201,9 @@ class VectorNavNode(Node):
         self._thread_running = False
         self.packet_thread = Thread(target=self.packet_handling)
         self.get_logger().info("VectorNav Node initiated")
+
+        # Start
+        self.start()
 
     def start(self):
         self._thread_running = True
@@ -203,15 +231,12 @@ class VectorNavNode(Node):
             compositeData = self.vn_sensor.vs.getNextMeasurement(block=True)
             if compositeData is None:
                 continue
-
             if compositeData.matchesMessage(self.vn_sensor.binaryOutput1Register):
                 system_timestamp = self.get_clock().now()
                 ros_timestamp = system_timestamp.to_msg()
 
                 # -- Time --
                 startup_time = Time()
-                # Assuming 'data' field in std_msgs/Time is what's intended. It's a builtin_interfaces/Time.
-                # Let's assign to the whole structure.
                 startup_time.sec = int(compositeData.time.timeStartup / 1e9)
                 startup_time.nanosec = int(compositeData.time.timeStartup % 1e9)
                 self.startup_time_publisher.publish(startup_time)
@@ -247,6 +272,15 @@ class VectorNavNode(Node):
                 imu_msg.linear_acceleration.x = compositeData.imu.accel[0]
                 imu_msg.linear_acceleration.y = compositeData.imu.accel[1]
                 imu_msg.linear_acceleration.z = compositeData.imu.accel[2]
+                imu_msg.orientation.x = compositeData.attitude.quaternion[0]
+                imu_msg.orientation.y = compositeData.attitude.quaternion[1]
+                imu_msg.orientation.z = compositeData.attitude.quaternion[2]
+                imu_msg.orientation.w = compositeData.attitude.quaternion[3]
+                
+                att_unc_rad_sq = compositeData.attitude.attU**2
+                imu_msg.orientation_covariance[0] = att_unc_rad_sq
+                imu_msg.orientation_covariance[4] = att_unc_rad_sq
+                imu_msg.orientation_covariance[8] = att_unc_rad_sq
                 self.imu_publisher.publish(imu_msg)
 
                 # -- GNSS --
@@ -281,9 +315,10 @@ class VectorNavNode(Node):
                 ins_vel_body_msg.twist.twist.linear.x = compositeData.ins.velBody[0]
                 ins_vel_body_msg.twist.twist.linear.y = compositeData.ins.velBody[1]
                 ins_vel_body_msg.twist.twist.linear.z = compositeData.ins.velBody[2]
-                ins_vel_body_msg.twist.covariance[0] = compositeData.ins.velU ** 2
-                ins_vel_body_msg.twist.covariance[7] = compositeData.ins.velU ** 2
-                ins_vel_body_msg.twist.covariance[14] = compositeData.ins.velU ** 2
+                ins_vel_unc_sq = compositeData.ins.velU**2
+                ins_vel_body_msg.twist.covariance[0] = ins_vel_unc_sq
+                ins_vel_body_msg.twist.covariance[7] = ins_vel_unc_sq
+                ins_vel_body_msg.twist.covariance[14] = ins_vel_unc_sq
                 self.ins_vel_body_publisher.publish(ins_vel_body_msg)
 
                 ins_vel_ned_msg = TwistWithCovarianceStamped()
@@ -292,9 +327,9 @@ class VectorNavNode(Node):
                 ins_vel_ned_msg.twist.twist.linear.x = compositeData.ins.velNed[0]
                 ins_vel_ned_msg.twist.twist.linear.y = compositeData.ins.velNed[1]
                 ins_vel_ned_msg.twist.twist.linear.z = compositeData.ins.velNed[2]
-                ins_vel_ned_msg.twist.covariance[0] = compositeData.ins.velU ** 2
-                ins_vel_ned_msg.twist.covariance[7] = compositeData.ins.velU ** 2
-                ins_vel_ned_msg.twist.covariance[14] = compositeData.ins.velU ** 2
+                ins_vel_ned_msg.twist.covariance[0] = ins_vel_unc_sq
+                ins_vel_ned_msg.twist.covariance[7] = ins_vel_unc_sq
+                ins_vel_ned_msg.twist.covariance[14] = ins_vel_unc_sq
                 self.ins_vel_ned_publisher.publish(ins_vel_ned_msg)
 
                 # -- Pose (orientation) --
@@ -305,4 +340,22 @@ class VectorNavNode(Node):
                 orientation_msg.pose.pose.orientation.y = compositeData.attitude.quaternion[1]
                 orientation_msg.pose.pose.orientation.z = compositeData.attitude.quaternion[2]
                 orientation_msg.pose.pose.orientation.w = compositeData.attitude.quaternion[3]
+                # Populate orientation covariance in the 6x6 pose covariance matrix
+                orientation_msg.pose.covariance[21] = att_unc_rad_sq # Roll variance
+                orientation_msg.pose.covariance[28] = att_unc_rad_sq # Pitch variance
+                orientation_msg.pose.covariance[35] = att_unc_rad_sq # Yaw variance
                 self.orientation_ned_publisher.publish(orientation_msg)
+
+def main():
+    rclpy.init()
+    vectornav_node = VectorNavNode()
+    try:
+        rclpy.spin(vectornav_node)
+    except KeyboardInterrupt:
+        print('Keyboard Interrupt (SIGINT)')
+    except Exception as e:
+        vectornav_node.get_logger().error(f'An unexpected error occurred: {e}')
+    finally:
+        vectornav_node.stop()
+        vectornav_node.destroy_node()
+        rclpy.shutdown()
