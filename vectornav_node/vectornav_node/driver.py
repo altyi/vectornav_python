@@ -5,13 +5,62 @@ from dataclasses import dataclass
 from typing import List
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, DurabilityPolicy
+import numpy as np
+import math
 
 from sensor_msgs.msg import Imu, MagneticField, Temperature, FluidPressure, NavSatFix, NavSatStatus
-# from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TwistWithCovarianceStamped, PoseWithCovarianceStamped
 from builtin_interfaces.msg import Time
 
 from vectornav import Sensor, Registers, Plugins
+
+# ==============================================================================
+# Helper functions for Coordinate Transformations
+# ==============================================================================
+# WGS84 ellipsoid constants
+WGS84_A = 6378137.0  # Semi-major axis
+WGS84_E2 = 0.00669437999014  # Eccentricity squared
+
+def lla_to_ecef(lat, lon, alt):
+    """Converts LLA (deg, deg, m) to ECEF (m, m, m) coordinates."""
+    lat_rad = math.radians(lat)
+    lon_rad = math.radians(lon)
+    sin_lat = math.sin(lat_rad)
+    cos_lat = math.cos(lat_rad)
+    
+    N = WGS84_A / math.sqrt(1 - WGS84_E2 * sin_lat**2)
+    
+    x = (N + alt) * cos_lat * math.cos(lon_rad)
+    y = (N + alt) * cos_lat * math.sin(lon_rad)
+    z = ((1 - WGS84_E2) * N + alt) * sin_lat
+    
+    return np.array([x, y, z])
+
+def ecef_to_enu_matrix(lat, lon):
+    """Creates a rotation matrix to convert ECEF to ENU coordinates."""
+    lat_rad = math.radians(lat)
+    lon_rad = math.radians(lon)
+    sin_lat = math.sin(lat_rad)
+    cos_lat = math.cos(lat_rad)
+    sin_lon = math.sin(lon_rad)
+    cos_lon = math.cos(lon_rad)
+    
+    return np.array([
+        [-sin_lon, cos_lon, 0],
+        [-sin_lat * cos_lon, -sin_lat * sin_lon, cos_lat],
+        [cos_lat * cos_lon, cos_lat * sin_lon, sin_lat]
+    ])
+
+def quaternion_multiply(q1, q0):
+    """Multiplies two quaternions (q1 * q0)."""
+    w0, x0, y0, z0 = q0
+    w1, x1, y1, z1 = q1
+    return np.array([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+                    -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=np.float64)
 
 # ==============================================================================
 # The Configuration Class
@@ -25,6 +74,8 @@ class VectorNavConfig:
     gnss_antenna_offset: List[float]
     gnss_compass_baseline: List[float]
     frame_id: str
+    map_frame_id: str
+    publish_odometry: bool
     save_settings_on_startup: bool
     settings_filename: str
 
@@ -130,6 +181,7 @@ class VectorNavSensor:
         # --- INS ---
         self.binaryOutput1Register.ins.insStatus = 1             # [vnpy.InsStatus]
         self.binaryOutput1Register.ins.posLla = 1                # [vnpy.Lla] The estimated position
+        self.binaryOutput1Register.ins.posEcef = 1               # [vnpy.Vec3d] Position in ECEF frame
         self.binaryOutput1Register.ins.velBody = 1               # [vnpy.Vec3f] The estimated velocity in the body-frame
         self.binaryOutput1Register.ins.velNed = 1                # [vnpy.Vec3f] The estimated velocity in the NED-frame
         self.binaryOutput1Register.ins.posU = 1                  # [float] The estimated uncertainty (1 Sigma) in the current position estimate
@@ -173,6 +225,8 @@ class VectorNavNode(Node):
                 ('gnss_antenna_offset', [1.0, 0.0, 0.0]),
                 ('gnss_compass_baseline', [1.0, 0.0, 0.0, 0.0256, 0.0256, 0.0256]),
                 ('frame_id', 'vn300'),
+                ('map_frame_id', 'map'),
+                ('publish_odometry', True),
                 ('save_settings_on_startup', True),
                 ('settings_filename', 'vectornav_settings.xml')
             ]
@@ -184,6 +238,8 @@ class VectorNavNode(Node):
             gnss_antenna_offset=self.get_parameter('gnss_antenna_offset').value,
             gnss_compass_baseline=self.get_parameter('gnss_compass_baseline').value,
             frame_id=self.get_parameter('frame_id').value,
+            map_frame_id=self.get_parameter('map_frame_id').value,
+            publish_odometry=self.get_parameter('publish_odometry').value,
             save_settings_on_startup=self.get_parameter('save_settings_on_startup').value,
             settings_filename=self.get_parameter('settings_filename').value
         )
@@ -194,6 +250,12 @@ class VectorNavNode(Node):
         self.vn_sensor.connect_to_sensor()
         self.vn_sensor.configure_sensor()
         self.vn_sensor.save_sensor_settings()
+
+        # --- Odometry State ---
+        self.datum_is_set = False
+        self.origin_ecef = None
+        self.ecef_to_enu_matrix = None
+        self.origin_lat_lon_alt = None
 
         # --- Publisher ---
         self.setup_publishers()
@@ -226,6 +288,21 @@ class VectorNavNode(Node):
         self.ins_vel_body_publisher = self.create_publisher(TwistWithCovarianceStamped, 'vectornav/ins/vel_body', 10)
         self.ins_vel_ned_publisher = self.create_publisher(TwistWithCovarianceStamped, 'vectornav/ins/vel_ned', 10)
         self.orientation_ned_publisher = self.create_publisher(PoseWithCovarianceStamped, 'vectornav/attitude/orientation_ned', 10)
+        
+        if self.vn_config.publish_odometry:
+            self.odometry_publisher = self.create_publisher(Odometry, 'vectornav/odometry', 10)
+            
+            # Create a latched publisher for the datum
+            qos_profile_transient_local = QoSProfile(
+                depth=1,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL
+            )
+            self.datum_publisher = self.create_publisher(
+                NavSatFix,
+                'vectornav/odometry_datum',
+                qos_profile=qos_profile_transient_local
+            )
+
 
     def packet_handling(self):
         while self._thread_running and rclpy.ok():
@@ -283,7 +360,6 @@ class VectorNavNode(Node):
                 p_unc_rad_sq = compositeData.attitude.yprU[1]**2
                 r_unc_rad_sq = compositeData.attitude.yprU[2]**2
                 
-
                 imu_msg.orientation_covariance[0] = r_unc_rad_sq
                 imu_msg.orientation_covariance[4] = p_unc_rad_sq
                 imu_msg.orientation_covariance[8] = y_unc_rad_sq
@@ -301,7 +377,8 @@ class VectorNavNode(Node):
                 fix_map = { 0: NavSatStatus.STATUS_NO_FIX, 1: NavSatStatus.STATUS_FIX, 2: NavSatStatus.STATUS_FIX, 
                             3: NavSatStatus.STATUS_FIX, 4: NavSatStatus.STATUS_SBAS_FIX, 5: NavSatStatus.STATUS_GBAS_FIX,
                             6: NavSatStatus.STATUS_GBAS_FIX}
-                gnss_msg.status.status = fix_map.get(compositeData.gnss.gnss1Fix, NavSatStatus.STATUS_NO_FIX)
+                gnss_status = fix_map.get(compositeData.gnss.gnss1Fix, NavSatStatus.STATUS_NO_FIX)
+                gnss_msg.status.status = gnss_status
                 gnss_msg.status.service = NavSatStatus.SERVICE_GPS
                 
                 unc_n = compositeData.gnss.gnss1PosUncertainty[0]
@@ -351,6 +428,87 @@ class VectorNavNode(Node):
                 orientation_msg.pose.covariance[28] = p_unc_rad_sq # Pitch variance
                 orientation_msg.pose.covariance[35] = y_unc_rad_sq # Yaw variance
                 self.orientation_ned_publisher.publish(orientation_msg)
+
+                # -- Odometry --
+                if self.vn_config.publish_odometry:
+                    self.publish_odometry(compositeData, ros_timestamp, gnss_status, gnss_msg)
+
+    def publish_odometry(self, compositeData, ros_timestamp, gnss_status, gnss_msg):
+        """Calculates and publishes the combined odometry message."""
+        if not self.datum_is_set:
+            if gnss_status > NavSatStatus.STATUS_NO_FIX:
+                self.origin_lat_lon_alt = (
+                    compositeData.ins.posLla.lat,
+                    compositeData.ins.posLla.lon,
+                    compositeData.ins.posLla.alt
+                )
+                self.origin_ecef = np.array(compositeData.ins.posEcef.aslist())
+                self.ecef_to_enu_matrix = ecef_to_enu_matrix(self.origin_lat_lon_alt[0], self.origin_lat_lon_alt[1])
+                self.datum_is_set = True
+                self.get_logger().info(f"Odometry datum set at LLA: {self.origin_lat_lon_alt}")
+                
+                # Publish the datum message
+                self.datum_publisher.publish(gnss_msg)
+
+            else:
+                self.get_logger().warn("Waiting for valid GPS fix to set odometry datum...", throttle_duration_sec=5)
+                return
+        
+        # --- Create Odometry Message ---
+        odom_msg = Odometry()
+        odom_msg.header.stamp = ros_timestamp
+        odom_msg.header.frame_id = self.vn_config.map_frame_id
+        odom_msg.child_frame_id = self.vn_config.frame_id
+
+        # --- Pose ---
+        # Position (convert current ECEF to ENU relative to datum)
+        current_ecef = np.array(compositeData.ins.posEcef.aslist())
+        delta_ecef = current_ecef - self.origin_ecef
+        pos_enu = self.ecef_to_enu_matrix @ delta_ecef
+        odom_msg.pose.pose.position.x = pos_enu[0] # East
+        odom_msg.pose.pose.position.y = pos_enu[1] # North
+        odom_msg.pose.pose.position.z = pos_enu[2] # Up
+
+        # Orientation (convert body-to-NED quaternion to body-to-ENU)
+        q_body_ned = np.array([compositeData.attitude.quaternion.scalar] + compositeData.attitude.quaternion.vector.aslist())
+        q_ned_to_enu = np.array([0.0, 1/math.sqrt(2), 1/math.sqrt(2), 0.0]) # w,x,y,z
+        q_body_enu = quaternion_multiply(q_ned_to_enu, q_body_ned)
+        odom_msg.pose.pose.orientation.w = q_body_enu[0]
+        odom_msg.pose.pose.orientation.x = q_body_enu[1]
+        odom_msg.pose.pose.orientation.y = q_body_enu[2]
+        odom_msg.pose.pose.orientation.z = q_body_enu[3]
+
+        # Pose Covariance
+        pos_unc_sq = compositeData.ins.posU**2
+        odom_msg.pose.covariance[0] = pos_unc_sq  # East
+        odom_msg.pose.covariance[7] = pos_unc_sq  # North
+        odom_msg.pose.covariance[14] = pos_unc_sq # Up
+        y_unc_rad_sq = compositeData.attitude.yprU[0]**2
+        p_unc_rad_sq = compositeData.attitude.yprU[1]**2
+        r_unc_rad_sq = compositeData.attitude.yprU[2]**2
+        odom_msg.pose.covariance[21] = r_unc_rad_sq # Roll
+        odom_msg.pose.covariance[28] = p_unc_rad_sq # Pitch
+        odom_msg.pose.covariance[35] = y_unc_rad_sq # Yaw
+
+        # --- Twist --- (in child_frame_id)
+        # Linear velocity is from velBody (already in the correct frame)
+        odom_msg.twist.twist.linear.x = compositeData.ins.velBody[0]
+        odom_msg.twist.twist.linear.y = compositeData.ins.velBody[1]
+        odom_msg.twist.twist.linear.z = compositeData.ins.velBody[2]
+        
+        # Angular velocity is from angularRate (already in the correct frame)
+        odom_msg.twist.twist.angular.x = compositeData.imu.angularRate[0]
+        odom_msg.twist.twist.angular.y = compositeData.imu.angularRate[1]
+        odom_msg.twist.twist.angular.z = compositeData.imu.angularRate[2]
+
+        # Twist Covariance
+        vel_unc_sq = compositeData.ins.velU**2
+        odom_msg.twist.covariance[0] = vel_unc_sq
+        odom_msg.twist.covariance[7] = vel_unc_sq
+        odom_msg.twist.covariance[14] = vel_unc_sq
+        # Angular velocity uncertainty is not provided, so it is left as zero
+
+        self.odometry_publisher.publish(odom_msg)
 
 def main():
     rclpy.init()

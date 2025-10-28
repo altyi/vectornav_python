@@ -14,6 +14,11 @@ vectornav_node:
 
     # --- Frame IDs ---
     frame_id: "vn300"       # Base frame for the sensor (body frame)
+    map_frame_id: "map"     # The global frame for odometry output
+
+    # --- Data Publishing ---
+    # Publish a combined odometry message. This requires a valid GPS fix to set the datum.
+    publish_odometry: true
 
     # --- Register Settings ---
     # Save all configuration registers to a xml file upon node startup.
