@@ -442,7 +442,7 @@ class VectorNavNode(Node):
                     compositeData.ins.posLla.lon,
                     compositeData.ins.posLla.alt
                 )
-                self.origin_ecef = np.array(compositeData.ins.posEcef.aslist())
+                self.origin_ecef = np.array([compositeData.ins.posEcef[0], compositeData.ins.posEcef[1], compositeData.ins.posEcef[2]])
                 self.ecef_to_enu_matrix = ecef_to_enu_matrix(self.origin_lat_lon_alt[0], self.origin_lat_lon_alt[1])
                 self.datum_is_set = True
                 self.get_logger().info(f"Odometry datum set at LLA: {self.origin_lat_lon_alt}")
@@ -462,7 +462,7 @@ class VectorNavNode(Node):
 
         # --- Pose ---
         # Position (convert current ECEF to ENU relative to datum)
-        current_ecef = np.array(compositeData.ins.posEcef.aslist())
+        current_ecef = np.array([compositeData.ins.posEcef[0], compositeData.ins.posEcef[1], compositeData.ins.posEcef[2]])
         delta_ecef = current_ecef - self.origin_ecef
         pos_enu = self.ecef_to_enu_matrix @ delta_ecef
         odom_msg.pose.pose.position.x = pos_enu[0] # East
@@ -470,7 +470,12 @@ class VectorNavNode(Node):
         odom_msg.pose.pose.position.z = pos_enu[2] # Up
 
         # Orientation (convert body-to-NED quaternion to body-to-ENU)
-        q_body_ned = np.array([compositeData.attitude.quaternion.scalar] + compositeData.attitude.quaternion.vector.aslist())
+        q_body_ned = np.array([
+            compositeData.attitude.quaternion.scalar,
+            compositeData.attitude.quaternion.vector[0],
+            compositeData.attitude.quaternion.vector[1],
+            compositeData.attitude.quaternion.vector[2]
+        ])
         q_ned_to_enu = np.array([0.0, 1/math.sqrt(2), 1/math.sqrt(2), 0.0]) # w,x,y,z
         q_body_enu = quaternion_multiply(q_ned_to_enu, q_body_ned)
         odom_msg.pose.pose.orientation.w = q_body_enu[0]
