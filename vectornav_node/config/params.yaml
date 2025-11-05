@@ -7,7 +7,7 @@ vectornav_node:
     # Desired data output rate (Hz). This is used to calculate the 'rate_divisor'.
     # The actual rate is (IMU Rate / rate_divisor). Assuming IMU rate of 400Hz.
     # E.g., for 100Hz, divisor will be 4. For 50Hz, divisor will be 8.
-    output_rate: 20
+    output_rate: 40
     # --- GNSS Antenna Configuration ---
     gnss_antenna_offset: [0.515,0.11,-0.59]
     gnss_compass_baseline: [0.98, 0.0, 0.0, 0.0256, 0.0256, 0.0256]
@@ -15,10 +15,6 @@ vectornav_node:
     # --- Frame IDs ---
     frame_id: "vn300"       # Base frame for the sensor (body frame)
     map_frame_id: "map"     # The global frame for odometry output
-
-    # --- Data Publishing ---
-    # Publish a combined odometry message. This requires a valid GPS fix to set the datum.
-    publish_odometry: true
 
     # --- Register Settings ---
     # Save all configuration registers to a xml file upon node startup.
