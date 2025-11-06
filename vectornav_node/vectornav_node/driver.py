@@ -28,7 +28,6 @@ class VectorNavConfig:
     gnss_antenna_offset: List[float]
     gnss_compass_baseline: List[float]
     frame_id: str
-    map_frame_id: str
     save_settings_on_startup: bool
     settings_filename: str
 
@@ -178,7 +177,6 @@ class VectorNavNode(Node):
                 ('gnss_antenna_offset', [1.0, 0.0, 0.0]),
                 ('gnss_compass_baseline', [1.0, 0.0, 0.0, 0.0256, 0.0256, 0.0256]),
                 ('frame_id', 'vn300'),
-                ('map_frame_id', 'map'),
                 ('save_settings_on_startup', True),
                 ('settings_filename', 'vectornav_settings.xml')
             ]
@@ -190,7 +188,6 @@ class VectorNavNode(Node):
             gnss_antenna_offset=self.get_parameter('gnss_antenna_offset').value,
             gnss_compass_baseline=self.get_parameter('gnss_compass_baseline').value,
             frame_id=self.get_parameter('frame_id').value,
-            map_frame_id=self.get_parameter('map_frame_id').value,
             save_settings_on_startup=self.get_parameter('save_settings_on_startup').value,
             settings_filename=self.get_parameter('settings_filename').value
         )
